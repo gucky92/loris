@@ -411,8 +411,11 @@ class DynamicForm:
 
         readonly = []
 
+        # restrict table
+        entry = self.table & restriction
+
         formatted_dict = (
-            self.table & restriction
+            entry
         ).proj(*self.non_blobs).fetch1()  # proj non_blobs?
 
         for key, value in formatted_dict.items():
