@@ -4,3 +4,7 @@
 
 class LorisError(Exception):
     pass
+
+
+class LorisSerializationError(Exception):
+    pass

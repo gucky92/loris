@@ -281,10 +281,29 @@ class ParentValidator:
                 )
 
 
+class PutValidator:
+
+    def __init__(self, put_test=None):
+        self.put_test = put_test
+
+    def __call__(self, form, field):
+
+        data = field.data
+
+        if self.put_test is not None:
+            try:
+                self.put_test(data)
+            except Exception as e:
+                raise ValidationError(
+                    f'Data did not pass put test: {e}'
+                )
+
+
 class JsonSerializableValidator:
 
-    def __init__(self, is_instance=None):
+    def __init__(self, is_instance=None, put_test=None):
         self.is_instance = is_instance
+        self.put_test = put_test
 
     def __call__(self, form, field):
 
@@ -314,6 +333,14 @@ class JsonSerializableValidator:
             except Exception as e:
                 raise ValidationError(
                     f'Data is not a json-serializable: {e}'
+                )
+
+        if self.put_test is not None:
+            try:
+                self.put_test(data)
+            except Exception as e:
+                raise ValidationError(
+                    f'Data did not pass put test: {e}'
                 )
 
 

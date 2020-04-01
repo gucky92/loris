@@ -105,12 +105,13 @@ if __name__ == '__main__':
         "--script", help="filepath to script", type=str
     )
     parser.add_argument(
-        "--outputfile", help="output file after running script", type=str
+        "--outputfile", help="output file after running script", type=str,
+        action='append'
     )
     parser.add_argument(
         "--outputattr",
         help="attr in table for insertion of the output",
-        type=str
+        type=str, action='append'
     )
     parser.add_argument(
         "--configattr",
@@ -185,12 +186,15 @@ if __name__ == '__main__':
                 inserting_autoscript_stuff(
                     args.configattr, args.location,
                     table_class, primary_dict)
-            if args.outputattr != 'null' and args.outputattr is not None:
-                inserting_autoscript_stuff(
-                    args.outputattr, os.path.join(cwd, args.outputfile),
-                    table_class, primary_dict)
-            # field name or <part_table_name:data/file_lookupname>
-            # or just an attribute in the table
+            if args.outputattr is not None:
+                for outputattr, outputfile in zip(
+                    args.outputattr, args.outputfile
+                ):
+                    inserting_autoscript_stuff(
+                        outputattr, os.path.join(cwd, outputfile),
+                        table_class, primary_dict)
+                    # field name or <part_table_name:data/file_lookupname>
+                    # or just an attribute in the table
     except Exception as e:
         jobs.complete(
             table_class.full_table_name, primary_dict

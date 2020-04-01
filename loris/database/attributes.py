@@ -5,11 +5,13 @@ import re
 import os
 import shutil
 import json
+from numbers import Number
 
 import numpy as np
 import datajoint as dj
 
 from loris.database.mixin import Placeholder, ProcessMixin
+from loris.errors import LorisSerializationError
 
 
 class TrueBool(dj.AttributeAdapter):
@@ -60,16 +62,28 @@ class ListString(dj.AttributeAdapter):
 
     attribute_type = 'varchar(4000)'
 
+    def __init__(self, ele_truth_call=None, error_message=None):
+        self.ele_truth_call = ele_truth_call
+        self.error_message = error_message
+
     def put(self, obj):
         if obj is None:
             return
         if isinstance(obj, str):
             try:
                 obj = json.loads(obj)
-            except Exception:
-                pass
+            except Exception as e:
+                raise LorisSerializationError(
+                    f'Data is not a json-serializable: {e}'
+                )
         assert isinstance(obj, (list, tuple)), \
             f'object must be list or tuple for liststring type: {type(obj)}'
+        if self.ele_truth_call is not None:
+            assert all([self.ele_truth_call(ele) for ele in obj]), \
+                (
+                    f'Not all object elements pass truth call.'
+                    if self.error_message is None else self.error_message
+                )
         return json.dumps(obj)
 
     def get(self, value):
@@ -80,16 +94,28 @@ class DictString(dj.AttributeAdapter):
 
     attribute_type = 'varchar(4000)'
 
+    def __init__(self, val_truth_call=None, error_message=None):
+        self.val_truth_call = val_truth_call
+        self.error_message = error_message
+
     def put(self, obj):
         if obj is None:
             return
         if isinstance(obj, str):
             try:
                 obj = json.loads(obj)
-            except Exception:
-                pass
+            except Exception as e:
+                raise LorisSerializationError(
+                    f'Data is not a json-serializable: {e}'
+                )
         assert isinstance(obj, (dict)), \
             f'object must be dict for dictstring type: {type(obj)}'
+        if self.val_truth_call is not None:
+            assert all([self.val_truth_call(val) for val in obj.values()]), \
+                (
+                    f'Not all object values pass truth call.'
+                    if self.error_message is None else self.error_message
+                )
         return json.dumps(obj)
 
     def get(self, value):
@@ -319,7 +345,19 @@ crossschema = CrossSchema()
 truebool = TrueBool()
 tarfolder = TarFolder()
 liststring = ListString()
-tags = ListString()
+tags = ListString(
+    lambda x: isinstance(x, str),
+    'Elements of list must be strings.'
+)
+listintervals = ListString(
+    lambda x: (
+        (isinstance(x, (list, tuple)))
+        and (len(x) == 2)
+        and (isinstance(x[0], Number))
+        and (isinstance(x[1], Number))
+    ),
+    'Elements of list must be two-tuple of numbers (integers or float).'
+)
 dictstring = DictString()
 attachprocess = AttachProcess()
 attachplaceholder = AttachPlaceholder()
@@ -341,5 +379,6 @@ custom_attributes_dict = {
     'attachplaceholder': attachplaceholder,
     'lookupname': lookupname,
     'email': email,
-    'phone': phone
+    'phone': phone,
+    'listintervals': listintervals
 }

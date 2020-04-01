@@ -8,6 +8,7 @@ import shutil
 import inspect
 import multiprocessing as mp
 from collections import defaultdict
+import pymysql
 import datajoint as dj
 from datajoint.settings import default
 from datajoint.utils import to_camel_case
@@ -172,7 +173,13 @@ class Config(dict):
         """
         self.datajoint_configuration()
         self.connect_ssh()
-        self['connection'] = dj.conn(*args, **kwargs)
+        if self['database.host'] == 'mysql' and not args:
+            try:
+                self['connection'] = dj.conn(*args, **kwargs)
+            except pymysql.OperationalError:
+                self['connection'] = dj.conn('127.0.0.1', **kwargs)
+        else:
+            self['connection'] = dj.conn(*args, **kwargs)
         return self['connection']
 
     def datajoint_configuration(self):
@@ -199,6 +206,8 @@ class Config(dict):
             else:
                 self[key] = ele
 
+        dj.config['backup_context'] = custom_attributes_dict
+
     def perform_checks(self):
         """perform various checks (create directories if they don't exist)
         """
@@ -213,6 +222,8 @@ class Config(dict):
         if not os.path.exists(self['tmp_folder']):
             os.makedirs(self['tmp_folder'])
 
+        self['autoscript_folder'] = os.path.realpath(
+            self['autoscript_folder'])
         if not os.path.exists(self['autoscript_folder']):
             os.makedirs(self['autoscript_folder'])
 
@@ -237,8 +248,36 @@ class Config(dict):
 
         self['schemata'] = schemata
 
+    def get_table_from_classname(self, class_name):
+        """get table from schemata using table class name format
+        """
+
+        table_info = class_name.split('.')
+        schema, table_classes = table_info[0], table_info[1:]
+
+        schema_module = self['schemata'].get(schema, None)
+
+        if schema_module is None:
+            raise LorisError(
+                f'schema {schema} not in database; refresh database'
+            )
+
+        table = schema_module
+
+        for table_ in table_classes:
+
+            try:
+                table = getattr(table, table_)
+            except AttributeError:
+                raise LorisError(
+                    f'table {table_} not in schema {schema}; '
+                    'refresh database'
+                )
+
+        return table
+
     def get_table(self, full_table_name):
-        """get table from schemata
+        """get table from schemata using full_table_name
         """
 
         schema, table_name = full_table_name.replace('`', '').split('.')
@@ -657,20 +696,40 @@ class Config(dict):
                 isinstance(button.get('validate', []), list),
                 isinstance(button.get('insert', False), bool),
                 isinstance(button.get('configattr', ''), str),
-                isinstance(button.get('outputfile', ''), str),
-                isinstance(button.get('outputattr', ''), str),
+                isinstance(button.get('outputfile', ''), (str, list)),
+                isinstance(button.get('outputattr', ''), (str, list)),
             ]):
                 raise LorisError(message)
 
             button['script'] = secure_filename(button['script'])
-            if not os.path.exists(os.path.join(autoscript_filepath, button['script'])):
+            if not os.path.exists(
+                os.path.join(autoscript_filepath, button['script'])
+            ):
                 raise LorisError(
                     f'{base_message} script "{button["script"]}" '
                     'does not exist in autoscript folder.'
                 )
 
-            if 'outputfile' in button:
-                button['outputfile'] = secure_filename(button['outputfile'])
+            if (
+                'outputfile' in button
+                and isinstance(button['outputfile'], str)
+            ):
+                if not isinstance(button['outputattr'], str):
+                    raise LorisError(message)
+                # put into list format
+                button['outputfile'] = [secure_filename(button['outputfile'])]
+                button['outputattr'] = [button['outputattr']]
+            elif 'outputfile' in button:
+                if not (
+                    isinstance(button['outputattr'], list)
+                    and len(button['outputfile']) == len(button['outputattr'])
+                ):
+                    raise LorisError(message)
+
+                button['outputfile'] = [
+                    secure_filename(ifilepath)
+                    for ifilepath in button['outputfile']
+                ]
 
         if not isinstance(config_forms, dict):
             raise LorisError(

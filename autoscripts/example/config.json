@@ -5,8 +5,8 @@
             "validate": ["form_name", "form_name2"],
             "insert": true,
             "configattr": "<Files:example_configuration>",
-            "outputfile": "output.json",
-            "outputattr": "<Data:example_output>"
+            "outputfile": ["output.json"],
+            "outputattr": ["<Data:example_output>"]
         }
     },
     "forms": {
@@ -24,6 +24,13 @@
                 "type": "float",
                 "default": null,
                 "iterate": true
+            },
+            "db" : {
+                "type": "database",
+                "loc": [
+                    "subjects.FlyGenotype",
+                    ["chr1", "chr2", "chr3"]
+                ]
             },
             "d" : "int",
             "e" : "bool",

@@ -216,6 +216,15 @@ class ConfigReader:
         if not process.running:
 
             if self.buttons[button].get('insert', False):
+                # create outputfile/attr list
+                outputfiles = []
+                outputattrs = []
+                for outputfile, outputattr in zip(
+                    self.buttons.get('outputfile', []),
+                    self.buttons.get('outputattr', [])
+                ):
+                    outputfiles.extend(["--outputfile", f"{outputfile}"])
+                    outputattrs.extend(["--outputattr", f"{outputattr}"])
                 # running the insert script
                 command = [
                     "python",
@@ -227,13 +236,9 @@ class ConfigReader:
                     f"{script_file}",
                     "--location",
                     f"{self.current_config_file}",
-                    "--outputfile",
-                    f"{self.buttons.get('outputfile', 'null')}",
                     "--configattr",
                     f"{self.buttons.get('configattr', 'null')}",
-                    "--outputattr",
-                    f"{self.buttons.get('outputattr', 'null')}",
-                ]
+                ] + outputfiles + outputattrs
             else:
                 # just run the python script
                 command = [

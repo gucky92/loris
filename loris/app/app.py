@@ -12,9 +12,13 @@ from loris.app.login import User
 
 if config['init_database']:
     from loris.database.schema import (
-        anatomy, equipment, experimenters,
-        imaging, recordings, subjects, core
+        equipment, experimenters, core
     )
+
+    if config['include_fly']:
+        from loris.database.schema import (
+            anatomy, imaging, recordings, subjects
+        )
 
 
 class LorisApp(Flask):

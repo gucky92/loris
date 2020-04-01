@@ -1,6 +1,7 @@
 """utils functions for autoscripting
 """
 
+from ast import literal_eval
 import numpy as np
 import json
 import pickle
@@ -140,3 +141,30 @@ class EnumReader:
 
         index = self.choices.index(value)
         return self.value[index]
+
+
+class DbReader:
+
+    def __init__(self, table_class, columns):
+
+        self.table_class = table_class
+        self.columns = columns
+
+    def __call__(self, value):
+
+        if value is None:
+            return
+
+        value = literal_eval(value)
+        restrict = {
+            key: val
+            for val, key in zip(value, self.table_class.primary_key)
+        }
+
+        entry = self.table_class & restrict
+        data = entry.fetch1()
+
+        if isinstance(self.columns, str):
+            return data[self.columns]
+        else:
+            return [data[col] for col in self.columns]

@@ -17,6 +17,7 @@ from loris.database.users import (
     grantuser, grantprivileges, dropuser, change_password
 )
 
+
 __all__ = [
     'config',
     'conn',
@@ -28,15 +29,3 @@ __all__ = [
     'dropuser',
     'change_password'
 ]
-
-# if config['init_database']:
-#     # import schema
-#     from loris.database.schema import (
-#         anatomy, equipment, experimenters,
-#         imaging, recordings, subjects, core
-#     )
-#
-#     __all__ += [
-#         'anatomy', 'equipment', 'experimenters',
-#         'imaging', 'recordings', 'subjects', 'core',
-#     ]

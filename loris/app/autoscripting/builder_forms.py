@@ -90,14 +90,14 @@ def dynamic_scriptform(folderpath):
             ),
             validators=[Optional()]
         )
-        outputfile = StringField(
+        outputfile = TagListField(
             'outputfile',
             description=(
                 'name of the output file from the autoscript'
             ),
             validators=[Optional()]
         )
-        outputattr = StringField(
+        outputattr = TagListField(
             'outputattr',
             description=(
                 'column name in experiment form '

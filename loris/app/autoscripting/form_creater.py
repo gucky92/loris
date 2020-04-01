@@ -12,6 +12,7 @@ from flask_wtf import FlaskForm as Form
 from wtforms import Form as NoCsrfForm
 from werkzeug.utils import secure_filename
 import glob
+import pandas as pd
 
 from loris import config
 from loris.app.forms import NONES
@@ -22,7 +23,7 @@ from loris.app.forms.formmixin import (
 from loris.app.autoscripting.utils import (
     json_reader, array_reader, recarray_reader,
     frame_reader, series_reader, EnumReader, ListReader, TupleReader,
-    DictReader
+    DictReader, DbReader
 )
 from loris.errors import LorisError
 
@@ -120,19 +121,19 @@ class AutoscriptedField:
 
         if loc is None and not isinstance(value, dict):
             if value == 'list':
-                kwargs['validators'].append(JsonSerializableValidator())
+                kwargs['validators'].append(JsonSerializableValidator(list))
                 field = ListField(**kwargs)
             elif value == 'dict':
-                kwargs['validators'].append(JsonSerializableValidator())
+                kwargs['validators'].append(JsonSerializableValidator(dict))
                 field = DictField(**kwargs)
             elif value == 'str':
                 field = StringField(**kwargs)
             elif value == 'set':
-                kwargs['validators'].append(JsonSerializableValidator())
+                kwargs['validators'].append(JsonSerializableValidator(list))
                 post_process = set
                 field = ListField(**kwargs)
             elif value == 'tuple':
-                kwargs['validators'].append(JsonSerializableValidator())
+                kwargs['validators'].append(JsonSerializableValidator(list))
                 post_process = tuple
                 field = ListField(**kwargs)
             elif value == 'int':
@@ -173,7 +174,7 @@ class AutoscriptedField:
                 ]
                 post_process = EnumReader(value, choices)
 
-                if default is None:
+                if default is None and not required:
                     choices = ['NULL'] + choices
                 kwargs['choices'] = [(ele, ele) for ele in choices]
 
@@ -182,6 +183,46 @@ class AutoscriptedField:
                 raise LorisError(
                     f"field value {value} not accepted for {key}."
                 )
+        elif loc is not None and value == 'database':
+            if not isinstance(loc, list) or not len(loc) == 2:
+                raise LorisError(
+                    f"If type '{value}' then loc must be of type "
+                    "list with exactly two elements: "
+                    "1. the database table class. "
+                    "2. the columns to fetch for selected entry (str or list)."
+                )
+            # get table from database table class name
+            table = config.get_table_from_classname(loc[0])
+            columns = loc[1]
+
+            # check columns
+            if isinstance(columns, str) and columns not in table.heading:
+                raise LorisError(
+                    f"Column '{columns}' not in table "
+                    f"{table.full_table_name}; cannot create field {key}."
+                )
+            if set(columns) - set(table.heading):
+                raise LorisError(
+                    f"Columns '{set(columns) - set(table.heading)}' not "
+                    f"in table {table.full_table_name}; "
+                    f"cannot create field {key}."
+                )
+
+            post_process = DbReader(table, columns)
+            # create choices
+            choices = table.proj().fetch()
+            choices = [
+                (str(ele), str(ele))
+                if len(ele) > 1
+                else (str(ele), str(ele[0]))
+                for ele in choices
+            ]
+
+            if default is None and not required:
+                choices = [('NULL', 'NULL')] + choices
+
+            kwargs['choices'] = choices
+            field = SelectField(**kwargs)
         elif loc is not None and isinstance(value, str):
             loc = secure_filename(loc)
             locpath = os.path.join(folderpath, loc)

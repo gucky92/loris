@@ -30,15 +30,15 @@
     "assignedgroup_table": "AssignedExperimentalProject",
     "standard_password": "fruitfly",
     "administrator_info" : {
-        "experimenter": "gucky92",
-        "first_name": "Matthias",
-        "last_name": "Christenson",
-        "email": "matchristenson@gmail.com",
+        "experimenter": "administrator",
+        "first_name": "FIRSTNAME",
+        "last_name": "LASTNAME",
+        "email": "administrator@mail.com",
         "phone": "000-000-0000",
-        "date_joined": "2020-01-24",
+        "date_joined": "2020-01-01",
         "active": true
     },
-    "administrators": ["gucky92"],
+    "administrators": ["administrator"],
     "wiki_folder": "~/loris/wiki",
     "autoscript_folder": "~/loris/autoscripts",
     "autoscript_tables": ["imaging.TwoPhotonRecording"],
@@ -46,6 +46,6 @@
 
     "_ssh_comment": "keys for SSH tunneling of MySQL database. See: https://sshtunnel.readthedocs.io/en/latest/",
     "ssh_address": null,
-    "ssh_username": "gucky92",
+    "ssh_username": "administrator",
     "ssh_pkey": "~/.ssh/id_rsa"
 }
