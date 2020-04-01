@@ -153,7 +153,7 @@ def form_template(
                             table=table,
                             schema=schema,
                             subtable=subtable,
-                            # overwrite='True',
+                            overwrite='True',
                             _id=str(_id)
                         )
                     )
@@ -168,10 +168,13 @@ def form_template(
         enter_show = ['show', 'true']
 
         if (edit == 'True') or (overwrite == 'True'):
-            readonly.extend(dynamicform.populate_form(
-                _id, form, is_edit=edit,
-                **kwargs
-            ))
+            try:
+                readonly.extend(dynamicform.populate_form(
+                    _id, form, is_edit=edit,
+                    **kwargs
+                ))
+            except dj.DataJointError as e:
+                flash(f"{e}", 'error')
 
     return render_template(
         f'pages/{page}.html',
