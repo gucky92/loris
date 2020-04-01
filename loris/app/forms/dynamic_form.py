@@ -406,7 +406,7 @@ class DynamicForm:
         return primary_dict
 
     def populate_form(
-        self, restriction, form, is_edit='False', **kwargs
+        self, restriction, form, is_edit=False, **kwargs
     ):
 
         readonly = []
@@ -421,7 +421,7 @@ class DynamicForm:
         for key, value in formatted_dict.items():
             formatted_dict[key] = self.fields[key].prepare_populate(value)
 
-            if is_edit == 'True' and key in self.table.primary_key:
+            if is_edit and key in self.table.primary_key:
                 readonly.append(key)
 
         # populate part tables
@@ -440,7 +440,7 @@ class DynamicForm:
                                 part_table.name
                             ].fields[key].prepare_populate(value)
 
-                        if is_edit == 'True' and key in part_table.primary_key:
+                        if is_edit and key in part_table.primary_key:
                             readonly.append(key)
 
         # update with kwargs

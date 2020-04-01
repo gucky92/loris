@@ -101,8 +101,7 @@ def form_template(
     delete_url = url_for(
         'delete', schema=schema, table=table, subtable=subtable)
 
-    overwrite = request.args.get('overwrite', "False")
-    edit = request.args.get('edit', "False")
+    edit = literal_eval(request.args.get('edit', "False"))
     dynamicformclass = DynamicForm
 
     dynamicform, form = config.get_dynamicform(
@@ -128,7 +127,7 @@ def form_template(
         if submit is None:
             pass
 
-        elif submit in ['Save', 'Overwrite', 'Edit']:
+        elif submit in ['Save', 'Overwrite']:
             # show enter fields
             enter_show = ['show', 'true']
 
@@ -140,7 +139,11 @@ def form_template(
                 try:
                     _id = dynamicform.insert(
                         form,
-                        _id,
+                        (
+                            _id
+                            if (edit or (submit == 'Overwrite'))
+                            else None
+                        ),
                         **kwargs)
                 except dj.DataJointError as e:
                     flash(f"{e}", 'error')
@@ -153,7 +156,6 @@ def form_template(
                             table=table,
                             schema=schema,
                             subtable=subtable,
-                            overwrite='True',
                             _id=str(_id)
                         )
                     )
@@ -166,15 +168,13 @@ def form_template(
     elif _id is not None:
         # show enter fields
         enter_show = ['show', 'true']
-
-        if (edit == 'True') or (overwrite == 'True'):
-            try:
-                readonly.extend(dynamicform.populate_form(
-                    _id, form, is_edit=edit,
-                    **kwargs
-                ))
-            except dj.DataJointError as e:
-                flash(f"{e}", 'error')
+        try:
+            readonly.extend(dynamicform.populate_form(
+                _id, form, is_edit=edit,
+                **kwargs
+            ))
+        except dj.DataJointError as e:
+            flash(f"{e}", 'error')
 
     return render_template(
         f'pages/{page}.html',
