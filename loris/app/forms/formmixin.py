@@ -25,6 +25,9 @@ from loris.app.forms import NONES
 
 class HtmlLabelSelectWidget(Select):
 
+    def __init__(self, multiple=False, **kwargs):
+        super().__init__(multiple=multiple)
+
     @classmethod
     def render_option(cls, value, label, selected, **kwargs):
         if value is True:
