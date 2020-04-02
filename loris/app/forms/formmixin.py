@@ -64,11 +64,14 @@ class TagListField(StringField):
     ):
         """
         Construct a new field.
-        :param label: The label of the field.
-        :param validators: A sequence of validators to call when validate is called.
-        :param remove_duplicates: Remove duplicates in a case insensitive manner.
-        :param to_lowercase: Cast all values to lowercase.
-        :param separator: The separator that splits the individual tags.
+
+        Parameters
+        ----------
+        label: The label of the field.
+        validators: A sequence of validators to call when validate is called.
+        remove_duplicates: Remove duplicates in a case insensitive manner.
+        to_lowercase: Cast all values to lowercase.
+        separator: The separator that splits the individual tags.
         """
         super(TagListField, self).__init__(label, validators, **kwargs)
         self.remove_duplicates = remove_duplicates
@@ -78,7 +81,7 @@ class TagListField(StringField):
 
     def _value(self):
         if self.data:
-            return u', '.join(self.data)
+            return u'{} '.format(self.separator).join(self.data)
         else:
             return u''
 
@@ -107,6 +110,48 @@ class TagListField(StringField):
             if item.lower() not in d:
                 d[item.lower()] = True
                 yield item
+
+
+class TagDictField(StringField):
+    """Stringfield for a list of separated tags"""
+
+    def __init__(
+        self, label='', validators=None,
+        key_separator='=', separator=',', **kwargs
+    ):
+        """
+        Construct a new field.
+
+        Parameters
+        ----------
+        label: The label of the field.
+        validators: A sequence of validators to call when validate is called.
+        key_separator : The separator between key and value.
+        separator: The separator that splits the individual tags.
+        """
+        super(TagListField, self).__init__(label, validators, **kwargs)
+        self.key_separator = key_separator
+        self.separator = separator
+        self.data = dict()
+
+    def _value(self):
+        if self.data:
+            return u'{} '.format(self.separator).join([
+                f"{key}{self.key_separator}{value}"
+                for key, value in self.data.items()
+            ])
+        else:
+            return u''
+
+    def process_formdata(self, valuelist):
+        if valuelist:
+            self.data = dict([
+                [ele.strip() for ele in x.strip().split(self.key_separator)]
+                for x in valuelist[0].split(self.separator)
+                if x.strip() and (self.key_separator in x.strip())
+            ])
+            if not self.data:
+                self.data = None
 
 
 class EvalJsonField:

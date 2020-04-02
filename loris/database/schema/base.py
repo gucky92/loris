@@ -5,6 +5,7 @@ COMMENTS = 'comments = null : varchar(4000)'
 DESCRIPTION = 'description = null : varchar(4000) # (detailed) description'
 PRIMARY_NAME = '{name} : <lookupname> # {comment}'
 TAGS = 'tags = null : <tags> # comma-separated tags'
+DICTTAGS = 'dict = null: <dicttags> # comma-separated tags with key=value format'
 NEURAL_RECORDING = f"""
     recording_id : int auto_increment # integer id number
     ---
@@ -16,6 +17,7 @@ NEURAL_RECORDING = f"""
     recording_time = CURRENT_TIMESTAMP : timestamp # time of recording
     completed = 0 : <truebool> # was the recording completed as intended
     {TAGS}
+    {DICTTAGS}
     {COMMENTS}
     """
 

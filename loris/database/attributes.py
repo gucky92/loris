@@ -359,6 +359,10 @@ listintervals = ListString(
     'Elements of list must be two-tuple of numbers (integers or float).'
 )
 dictstring = DictString()
+dicttags = DictString(
+    lambda x: isinstance(x, str),
+    'Values of dict must be strings'
+)
 attachprocess = AttachProcess()
 attachplaceholder = AttachPlaceholder()
 lookupname = LookupName()
@@ -374,6 +378,7 @@ custom_attributes_dict = {
     'tarfolder': tarfolder,
     'liststring': liststring,
     'dictstring': dictstring,
+    'dicttags': dicttags,
     'tags': tags,
     'attachprocess': attachprocess,
     'attachplaceholder': attachplaceholder,

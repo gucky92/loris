@@ -33,7 +33,7 @@ from loris.app.forms.formmixin import (
     ParentValidator, JsonSerializableValidator, AttachFileField,
     BlobFileField, Extension, TagListField, MetaHiddenField,
     ParentInputRequired, Always, LookupNameValidator, PutValidator,
-    HtmlLabelSelectWidget
+    HtmlLabelSelectWidget, TagDictField
 )
 
 
@@ -430,6 +430,8 @@ class DynamicField:
             return DictField(**kwargs)
         elif attr_type_name == 'tags':
             return TagListField(**kwargs)
+        elif attr_type_name == 'dicttags':
+            return TagDictField(**kwargs)
         elif attr_type_name == 'link':
             kwargs['validators'].append(URL(False))
         elif attr_type_name == 'email':

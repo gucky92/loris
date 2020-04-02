@@ -10,7 +10,7 @@ from loris.database.attributes import truebool, attachplaceholder, tags
 from loris.database.attributes import lookupname, listintervals
 from loris.database.schema.base import (
     COMMENTS, NEURAL_RECORDING, ManualLookup, TAGS,
-    FilesMixin, DataMixin, ExtensionMixin
+    FilesMixin, DataMixin, ExtensionMixin, DICTTAGS
 )
 
 
@@ -37,6 +37,7 @@ class WholeCellRecording(dj.Manual):
     manual_end_time = null : float # in seconds
     remove_intervals = null : <listintervals> # list of intervals to remove in seconds
     {TAGS}
+    {DICTTAGS}
     {COMMENTS}
     """
 
