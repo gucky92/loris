@@ -143,6 +143,13 @@ class DynamicField:
         return data
 
     @property
+    def foreign_comment_data(self):
+        if self.foreign_is_simple_manuallookup:
+            return self.foreign_table.proj("comments").fetch()["comments"]
+        else:
+            return self.foreign_data
+
+    @property
     def foreign_is_manuallookup(self):
         if not self.is_foreign_key:
             return False
@@ -156,6 +163,13 @@ class DynamicField:
             )
         )
         # return True # TODO test is_manuallookup(self.foreign_table)
+
+    @property
+    def foreign_is_simple_manuallookup(self):
+        if not self.is_foreign_key:
+            return False
+        else:
+            return is_manuallookup(self.foreign_table)
 
     def create_field(self):
         """create field for dynamic form
@@ -473,7 +487,16 @@ class DynamicField:
             return MetaHiddenField(**kwargs)
 
     def get_foreign_choices(self):
-        choices = [(str(ele), str(ele)) for ele in self.foreign_data]
+        if self.foreign_is_simple_manuallookup:
+            choices = [
+                (str(ele), f'<span title="{comment}">{ele}</span>')
+                if comment is not None
+                else (str(ele), f'<span title="{ele}">{ele}</span>')
+                for ele, comment
+                in zip(self.foreign_data, self.foreign_comment_data)
+            ]
+        else:
+            choices = [(str(ele), str(ele)) for ele in self.foreign_data]
         if self.attr.nullable:
             choices = [('NULL', 'NULL')] + choices
         if self.foreign_is_manuallookup and not self.ignore_foreign_fields:

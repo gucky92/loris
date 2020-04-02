@@ -10,13 +10,10 @@ def is_manuallookup(table, ):
 
     if (
         (len(table.heading.primary_key) == 1)
-        and (len(table.heading.secondary_attributes) <= 1)
+        and (len(table.heading.secondary_attributes) == 1)
     ):
         pk = table.heading.primary_key[0]
-        try:
-            sk = table.heading.secondary_attributes[0]
-        except IndexError:
-            sk = 'comments'
+        sk = table.heading.secondary_attributes[0]
 
         truth = (
             (sk == 'comments')
