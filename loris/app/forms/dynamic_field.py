@@ -481,7 +481,7 @@ class DynamicField:
 
         if choices:
             kwargs['choices'] = choices
-            kwargs['widget'] = HtmlLabelSelectWidget
+            kwargs['widget'] = HtmlLabelSelectWidget()
             return SelectField(**kwargs)
         else:
             kwargs['label'] += ' -- <font color="red">MISSING ENTRIES IN PARENT TABLE!</font>'
