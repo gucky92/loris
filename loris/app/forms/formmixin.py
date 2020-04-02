@@ -129,7 +129,7 @@ class TagDictField(StringField):
         key_separator : The separator between key and value.
         separator: The separator that splits the individual tags.
         """
-        super(TagListField, self).__init__(label, validators, **kwargs)
+        super(TagDictField, self).__init__(label, validators, **kwargs)
         self.key_separator = key_separator
         self.separator = separator
         self.data = dict()
