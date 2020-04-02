@@ -39,7 +39,7 @@ class HtmlLabelSelectWidget(Select):
             ) + ")"
             label = (
                 f'{escape(label[0])}  '
-                f'<div style="font-size:xx-small">{escape(comment)}</div>')
+                f'&emsp;<small>{escape(comment)}</small>')
             options = dict(kwargs, value=value, title=comment)
         else:
             label = escape(label)
