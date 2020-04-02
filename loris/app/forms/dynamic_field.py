@@ -495,7 +495,7 @@ class DynamicField:
                 (str(ele), (str(ele), str(comment)))
                 if comment is not None
                 else
-                (str(ele), (str(ele), str(ele)))
+                (str(ele), str(ele))
                 for ele, comment
                 in zip(self.foreign_data, self.foreign_comment_data)
             ]

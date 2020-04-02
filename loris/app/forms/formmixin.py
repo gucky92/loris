@@ -32,15 +32,22 @@ class HtmlLabelSelectWidget(Select):
             value = text_type(value)
 
         if isinstance(label, (tuple, list)):
-            comment = label[1]
-            label = label[0]
+            comment = "(" + (
+                label[1]
+                if len(label[1]) < 42
+                else label[1][:40] + '...'
+            ) + ")"
+            label = (
+                f'{escape(label[0])}  '
+                f'<font size="small">{escape(comment)}</font>')
             options = dict(kwargs, value=value, title=comment)
         else:
+            label = escape(label)
             options = dict(kwargs, value=value)
         if selected:
             options["selected"] = True
         return Markup(
-            f"<option {html_params(**options)}>{escape(label)}</option>"
+            f"<option {html_params(**options)}>{label}</option>"
         )
 
 
