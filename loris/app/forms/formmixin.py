@@ -14,10 +14,29 @@ from flask_wtf.file import FileField
 from werkzeug.utils import secure_filename
 from wtforms.validators import InputRequired, Optional, NumberRange, \
     ValidationError, Length, UUID, URL, Email, StopValidation
-import datajoint as dj
+from wtforms.widgets import Select
+from wtforms.widgets import html_params
+from markupsafe import Markup
+from wtforms.compat import text_type
 
 from loris import config
 from loris.app.forms import NONES
+
+
+class HtmlLabelSelectWidget(Select):
+
+    @classmethod
+    def render_option(cls, value, label, selected, **kwargs):
+        if value is True:
+            # Handle the special case of a 'True' value.
+            value = text_type(value)
+
+        options = dict(kwargs, value=value)
+        if selected:
+            options["selected"] = True
+        return Markup(
+            f"<option {html_params(**options)}>{label}</option>"
+        )
 
 
 class MetaHiddenField(BooleanField):

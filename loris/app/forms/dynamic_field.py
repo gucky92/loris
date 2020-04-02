@@ -21,7 +21,6 @@ from wtforms import BooleanField, SelectField, DateField, DateTimeField, \
     TextAreaField, FieldList, DecimalField, HiddenField
 from wtforms.validators import InputRequired, Optional, NumberRange, \
     ValidationError, Length, UUID, URL, Email
-from wtforms.widgets import HTMLString
 from werkzeug.datastructures import FileStorage
 
 from loris import config
@@ -32,7 +31,8 @@ from loris.app.forms.formmixin import (
     ManualLookupForm, ParentFormField, DynamicFileField, DictField, ListField,
     ParentValidator, JsonSerializableValidator, AttachFileField,
     BlobFileField, Extension, TagListField, MetaHiddenField,
-    ParentInputRequired, Always, LookupNameValidator, PutValidator
+    ParentInputRequired, Always, LookupNameValidator, PutValidator,
+    HtmlLabelSelectWidget
 )
 
 
@@ -481,7 +481,7 @@ class DynamicField:
 
         if choices:
             kwargs['choices'] = choices
-            kwargs['widget'] = HTMLString
+            kwargs['widget'] = HtmlLabelSelectWidget
             return SelectField(**kwargs)
         else:
             kwargs['label'] += ' -- <font color="red">MISSING ENTRIES IN PARENT TABLE!</font>'
