@@ -16,7 +16,7 @@ from wtforms.validators import InputRequired, Optional, NumberRange, \
     ValidationError, Length, UUID, URL, Email, StopValidation
 from wtforms.widgets import Select
 from wtforms.widgets import html_params
-from markupsafe import Markup
+from markupsafe import Markup, escape
 from wtforms.compat import text_type
 
 from loris import config
@@ -31,11 +31,14 @@ class HtmlLabelSelectWidget(Select):
             # Handle the special case of a 'True' value.
             value = text_type(value)
 
-        options = dict(kwargs, value=value)
+        if isinstance(label, (tuple, list)):
+            comment = label[1]
+            label = label[0]
+        options = dict(kwargs, value=value, title=comment)
         if selected:
             options["selected"] = True
         return Markup(
-            f"<option {html_params(**options)}>{label}</option>"
+            f"<option {html_params(**options)}>{escape(label)}</option>"
         )
 
 

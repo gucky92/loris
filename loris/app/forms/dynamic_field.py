@@ -22,6 +22,7 @@ from wtforms import BooleanField, SelectField, DateField, DateTimeField, \
 from wtforms.validators import InputRequired, Optional, NumberRange, \
     ValidationError, Length, UUID, URL, Email
 from werkzeug.datastructures import FileStorage
+from markupsafe import escape
 
 from loris import config
 from loris.utils import is_manuallookup
@@ -491,14 +492,18 @@ class DynamicField:
     def get_foreign_choices(self):
         if self.foreign_is_simple_manuallookup:
             choices = [
-                (str(ele), f'<span title="{comment}">{ele}</span>')
+                (str(ele), (str(ele), str(comment)))
                 if comment is not None
-                else (str(ele), f'<span title="{ele}">{ele}</span>')
+                else
+                (str(ele), (str(ele), str(ele)))
                 for ele, comment
                 in zip(self.foreign_data, self.foreign_comment_data)
             ]
         else:
-            choices = [(str(ele), str(ele)) for ele in self.foreign_data]
+            choices = [
+                (str(ele), str(ele))
+                for ele in self.foreign_data
+            ]
         if self.attr.nullable:
             choices = [('NULL', 'NULL')] + choices
         if self.foreign_is_manuallookup and not self.ignore_foreign_fields:
