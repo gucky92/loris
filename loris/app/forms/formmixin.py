@@ -34,12 +34,12 @@ class HtmlLabelSelectWidget(Select):
         if isinstance(label, (tuple, list)):
             comment = "(" + (
                 label[1]
-                if len(label[1]) < 42
-                else label[1][:40] + '...'
+                if len(label[1]) < 52
+                else label[1][:50] + '...'
             ) + ")"
             label = (
                 f'{escape(label[0])}  '
-                f'<font size="small">{escape(comment)}</font>')
+                f'<div style="font-size:xx-small">{escape(comment)}</div>')
             options = dict(kwargs, value=value, title=comment)
         else:
             label = escape(label)
