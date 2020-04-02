@@ -34,7 +34,9 @@ class HtmlLabelSelectWidget(Select):
         if isinstance(label, (tuple, list)):
             comment = label[1]
             label = label[0]
-        options = dict(kwargs, value=value, title=comment)
+            options = dict(kwargs, value=value, title=comment)
+        else:
+            options = dict(kwargs, value=value)
         if selected:
             options["selected"] = True
         return Markup(
