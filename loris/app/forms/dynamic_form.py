@@ -8,7 +8,7 @@ import graphviz
 from flask_wtf import FlaskForm as Form
 from flask import render_template, request, flash, url_for, redirect
 import datajoint as dj
-from datajoint.hash import key_hash
+from datajoint.hash import hash_key_values
 from datajoint.table import lookup_class_name
 from wtforms import Form as NoCsrfForm
 from wtforms import StringField, IntegerField, BooleanField, FloatField, \
@@ -357,7 +357,7 @@ class DynamicForm:
                 jobs
                 & {
                     'table_name': self.table.full_table_name,
-                    'key_hash': key_hash(primary_dict)
+                    'key_hash': hash_key_values(primary_dict)
                 }
             )
             if reserved:
