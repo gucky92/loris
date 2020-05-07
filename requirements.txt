@@ -8,7 +8,8 @@ dash-table
 flask==1.1.1
 flask-compress
 flask-login
-flask-wtf==2.2.1
+wtforms==2.2.1
+flask-wtf
 markdown
 plotly
 graphviz
