@@ -336,10 +336,10 @@ class ParentValidator:
         """
         """
 
-        data = getattr(form, self.primary_key).data
+        data = tuple([getattr(form, key).data for key in self.primary_key])
 
         if field.data == '<new>':
-            if data in NONES:
+            if any(idata in NONES for idata in data):
                 raise ValidationError(
                     'Must specify new foreign primary key '
                     'if <add new entry> is selected.'
@@ -350,7 +350,7 @@ class ParentValidator:
                 )
 
         else:
-            if data not in NONES:
+            if any(idata not in NONES for idata in data):
                 raise ValidationError(
                     'If specifying new foreign primary key '
                     'need to set select field to <add new entry>'

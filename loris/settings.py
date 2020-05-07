@@ -9,6 +9,7 @@ import inspect
 import multiprocessing as mp
 from collections import defaultdict
 import pymysql
+import warnings
 import datajoint as dj
 from datajoint.settings import default
 from datajoint.utils import to_camel_case
@@ -119,6 +120,10 @@ class Config(dict):
             address = tuple(address)
             print(address)
 
+            # mute exceptions
+            kwargs['mute_exceptions'] = True
+            kwargs['raise_exception_if_any_forwarder_have_a_problem'] = False
+
             # initialize server
             server = SSHTunnelForwarder(
                 address, **kwargs
@@ -126,10 +131,7 @@ class Config(dict):
             self['server'] = server
 
             # start server
-            try:
-                server.start()
-            except HandlerSSHTunnelForwarderError:
-                server.restart()
+            server.start()
 
             return self['server']
 
@@ -140,6 +142,11 @@ class Config(dict):
         if self.get('server', None) is not None:
             self['server'].stop()
             self['server'] = None
+
+    def close(self):
+        self['connection'].close()
+        self.pop('connection', None)
+        self.disconnect_ssh()
 
     def __getitem__(self, k):
 
@@ -171,9 +178,9 @@ class Config(dict):
     def conn(self, *args, **kwargs):
         """connect to database with hostname, username, and password.
         """
-        self.datajoint_configuration()
+        # self.datajoint_configuration()
         self.connect_ssh()
-        if self['database.host'] == 'mysql' and not args:
+        if self['database.host'] == 'mysql' and not (args or kwargs):
             try:
                 self['connection'] = dj.conn(*args, **kwargs)
             except pymysql.OperationalError:

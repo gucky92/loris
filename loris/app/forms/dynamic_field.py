@@ -44,7 +44,7 @@ class DynamicField:
     ----------
     table : class
         datajoint.Table subclass representing a table in the mySQL database.
-    attribute : dj.Attribute
+    attribute : `dj.Attribute`
         attribute in table to create a field for.
     ignore_foreign_fields : bool
         whether to process foreign keys to create foreign field forms or
@@ -64,11 +64,11 @@ class DynamicField:
     @property
     def is_integer(self):
         # won't work with adapted types
-        return match_type(self.attr.type) == 'INTEGER'
+        return match_type(self.type) == 'INTEGER'
 
     @property
     def is_uuid(self):
-        return match_type(self.attr.type) == 'UUID'
+        return match_type(self.type) == 'UUID'
 
     @property
     def ignore_foreign_fields(self):
@@ -88,11 +88,59 @@ class DynamicField:
 
     @property
     def attr(self):
-        return self._attribute
+        if isinstance(self._attribute, list):
+            return self._attribute[0]
+        else:
+            return self._attribute
 
     @property
     def name(self):
+        if isinstance(self._attribute, list):
+            return '___'.join([attr.name for attr in self._attribute])
         return self.attr.name
+
+    @property
+    def names(self):
+        if isinstance(self._attribute, list):
+            return [attr.name for attr in self._attribute]
+        return [self.attr.name]
+
+    @property
+    def in_key(self):
+        return self.attr.in_key
+
+    @property
+    def nullable(self):
+        return self.attr.nullable
+
+    @property
+    def comment(self):
+        if isinstance(self._attribute, list):
+            return ''
+        return self.attr.comment
+
+    @property
+    def default(self):
+        if isinstance(self._attribute, list):
+            return None
+        return self.attr.default
+
+    # shouldn't be used if attribute is foreign_key
+    @property
+    def type(self):
+        return self.attr.type
+
+    @property
+    def sql_type(self):
+        return self.attr.sql_type
+
+    @property
+    def adapter(self):
+        return self.attr.adapter
+
+    @property
+    def is_blob(self):
+        return self.attr.is_blob
 
     @property
     def dependencies(self):
@@ -116,7 +164,8 @@ class DynamicField:
         aliased = None
         parents = self.dependencies.parents(self.table.full_table_name)
         for table_name, table_info in parents.items():
-            if self.name in table_info['attr_map']:
+            # TODO check
+            if set(self.names) == set(table_info['attr_map']):
                 # deal with aliasing
                 if table_info['aliased']:
                     aliased_parents = self.dependencies.parents(table_name)
@@ -134,14 +183,31 @@ class DynamicField:
         return self._foreign_table
 
     @property
+    def singular(self):
+        return (
+            not isinstance(self._attribute, list)
+            or len(self._attribute) == 1
+        )
+
+    @property
     def foreign_data(self):
         if self.aliased is None:
-            data = self.foreign_table.proj(self.name).fetch()[self.name]
+            data = self.foreign_table.proj().fetch()
         else:
-            data = self.foreign_table.proj(**self.aliased).fetch()[self.name]
-        # sort values if integer
-        if match_type(self.attr.type) == "INTEGER":
+            data = self.foreign_table.proj(**self.aliased).fetch()
+
+        if self.singular:
+            data = data[self.name]
+            # sort values if integer
+            # if self.is_integer:
+            # always sort values
             data = np.sort(data)
+        else:
+            data = pd.DataFrame(
+                data
+            ).sort_values(self.names)[self.names].to_records(index=False)
+        # elif:
+        #     data = pd.DataFrame(data).
         return data
 
     @property
@@ -181,8 +247,8 @@ class DynamicField:
 
         if field is None:
             warnings.warn(
-                f'No field generated for {self.attr.name} of '
-                f'type {self.attr.type}'
+                f'No field generated for {self.name} of '
+                f'type {self.type}'
             )
 
         return field
@@ -190,13 +256,6 @@ class DynamicField:
     def _create_field(self, attr_type=None, kwargs=None):
         """create field for dynamic form
         """
-
-        if attr_type is None:
-            type = match_type(self.attr.type)
-            sql_type = self.attr.sql_type
-        else:
-            sql_type = attr_type
-            type = match_type(attr_type)
 
         if kwargs is None:
             kwargs = self.get_init_kwargs()
@@ -209,9 +268,16 @@ class DynamicField:
             return self.create_manuallookup_field(kwargs)
         elif (
             self.is_foreign_key
-            and len(self.foreign_data) <= config['fk_dropdown_limit']
+            # and (len(self.foreign_data) <= config['fk_dropdown_limit'])
         ):
             return self.create_dropdown_field(kwargs)
+
+        if attr_type is None:
+            type = match_type(self.type)
+            sql_type = self.sql_type
+        else:
+            sql_type = attr_type
+            type = match_type(attr_type)
 
         if type == 'INTEGER':
             return self.integer_field(kwargs)
@@ -243,7 +309,7 @@ class DynamicField:
         """
 
         kwargs = {}
-        attr_name = self.attr.name.replace('_', ' ')
+        attr_name = self.name.replace('___', ', ').replace('_', ' ')
         if not self.is_foreign_key:
             kwargs['label'] = attr_name
         else:
@@ -252,9 +318,9 @@ class DynamicField:
                 ['schema', 'table', 'subtable'],
                 name_lookup(self.foreign_table.full_table_name).split('.')
             ))
-            if self.attr.in_key:
+            if self.in_key:
                 color = 'Crimson'
-            elif self.attr.nullable:
+            elif self.nullable:
                 color = 'DarkGray'
             else:
                 color = 'Black'
@@ -266,30 +332,30 @@ class DynamicField:
                 '</font>'
                 '</a>'
             )
-        if self.attr.comment.strip():
-            kwargs['description'] = self.attr.comment.strip()
-        else:
-            kwargs['description'] = self.attr.name.replace('_', ' ')
+        if self.comment.strip():
+            kwargs['description'] = self.comment.strip()
+        elif not self.is_foreign_key:
+            kwargs['description'] = self.name.replace('___', ', ').replace('_', ' ')
 
-        nullable = self.attr.nullable  # or self.attr.default in NONES
+        nullable = self.nullable  # or self.default in NONES
         kwargs['render_kw'] = {
-            'nullable': self.attr.nullable,
-            'primary_key': self.attr.in_key
+            'nullable': self.nullable,
+            'primary_key': self.in_key
         }
 
         # ignore_foreign_fields assumes that a parent form is being created
-        if nullable or (self.ignore_foreign_fields and self.attr.in_key):
+        if nullable or (self.ignore_foreign_fields and self.in_key):
             kwargs['default'] = None
         else:
-            kwargs['default'] = self.attr.default
+            kwargs['default'] = self.default
 
         if (
-            (self.attr.in_key or not nullable)
+            (self.in_key or not nullable)
             and not self.ignore_foreign_fields
         ):
             # case of no pop up
             kwargs['validators'] = [InputRequired()]
-        elif (self.attr.in_key or not nullable) and self.ignore_foreign_fields:
+        elif (self.in_key or not nullable) and self.ignore_foreign_fields:
             # case when foreign key pop up form
             kwargs['validators'] = [ParentInputRequired()]
         else:
@@ -305,13 +371,13 @@ class DynamicField:
     def _get_integer_default(self):
         # auto increment integer primary keys
         default = None
-        if self.ignore_foreign_fields and self.attr.in_key:
+        if self.ignore_foreign_fields and self.in_key:
             pass
         elif len(self.table()) == 0:
             default = 1
-        elif self.attr.in_key and len(self.table.heading.primary_key) == 1:
+        elif self.in_key and len(self.table.heading.primary_key) == 1:
             default = np.max(
-                self.table.proj().fetch()[self.attr.name]
+                self.table.proj().fetch()[self.name]
             ) + 1
         return default
 
@@ -344,22 +410,22 @@ class DynamicField:
         """
 
         if sql_type in ('datetime', 'timestamp'):
-            if not (self.ignore_foreign_fields and self.attr.in_key):
+            if not (self.ignore_foreign_fields and self.in_key):
                 kwargs['default'] = datetime.datetime.today()
             kwargs['label'] += '&emsp;<small>(Y/m/d H:M - e.g. 2020/01/01 11:11)</small>&emsp;'
             return DateTimeField(format='%Y/%m/%d %H:%M', **kwargs)
         elif sql_type == 'time':
-            if not (self.ignore_foreign_fields and self.attr.in_key):
+            if not (self.ignore_foreign_fields and self.in_key):
                 kwargs['default'] = datetime.datetime.today()
             kwargs['label'] += '&emsp;<small>(H:M - e.g. 11:11)</small>&emsp;'
             return DateTimeField(format='%H:%M', **kwargs)
         elif sql_type == 'date':
-            if not (self.ignore_foreign_fields and self.attr.in_key):
+            if not (self.ignore_foreign_fields and self.in_key):
                 kwargs['default'] = datetime.date.today()
             kwargs['label'] += '&emsp;<small>(Y/m/d - e.g. 2020/01/01)</small>&emsp;'
             return DateField(format='%Y/%m/%d', **kwargs)
         elif sql_type == 'year':
-            if not (self.ignore_foreign_fields and self.attr.in_key):
+            if not (self.ignore_foreign_fields and self.in_key):
                 kwargs['default'] = datetime.date.today()
             kwargs['label'] += '&emsp;<small>(Y - e.g. 2020)</small>&emsp;'
             return DateField(format='%Y', **kwargs)
@@ -369,7 +435,7 @@ class DynamicField:
         """
         choices = sql_type[sql_type.find('(')+1:sql_type.rfind(')')].split(',')
         choices = [ele.strip().strip('"').strip("'") for ele in choices]
-        if self.attr.nullable:
+        if self.nullable:
             choices = ['NULL'] + choices
         kwargs['choices'] = [(ele, ele) for ele in choices]
         return SelectField(**kwargs)
@@ -411,11 +477,11 @@ class DynamicField:
         """
 
         try:
-            attr_type = self.attr.adapter.attribute_type
+            attr_type = self.adapter.attribute_type
         except NotImplementedError:
-            attr_type = self.attr.sql_type
+            attr_type = self.sql_type
 
-        attr_type_name = self.attr.type.strip('<>')
+        attr_type_name = self.type.strip('<>')
         adapter = config['custom_attributes'].get(attr_type_name, None)
 
         if adapter is None:
@@ -449,10 +515,12 @@ class DynamicField:
 
         kwargs['id'] = 'existing_entries'
         if self.aliased is None:
-            kwargs['validators'].insert(0, ParentValidator(self.name))
+            kwargs['validators'].insert(0, ParentValidator(self.names))
         else:
             kwargs['validators'].insert(
-                0, ParentValidator(self.aliased[self.name]))
+                0,
+                ParentValidator([self.aliased[name] for name in self.names])
+            )
 
         # dynamically create form
         class FkForm(ManualLookupForm):
@@ -479,7 +547,7 @@ class DynamicField:
         """
 
         choices = self.get_foreign_choices()
-        if self.attr.nullable:
+        if self.nullable:
             kwargs['default'] = 'NULL'
 
         if choices:
@@ -506,7 +574,7 @@ class DynamicField:
                 (str(ele), str(ele))
                 for ele in self.foreign_data
             ]
-        if self.attr.nullable:
+        if self.nullable:
             choices = [('NULL', 'NULL')] + choices
         if self.foreign_is_manuallookup and not self.ignore_foreign_fields:
             choices += [('<new>', '<add new entry>')]
@@ -530,16 +598,25 @@ class DynamicField:
                         f" {self.foreign_table.full_table_name}: {e}"
                     )
                 if self.aliased is None:
-                    value = value[self.name]
+                    return {name: value[name] for name in self.names}
                 else:
-                    value = value[self.aliased[self.name]]
+                    return {name: value[self.aliased[name]]
+                            for name in self.names}
+            elif self.singular:
+                return {
+                    self.name: value['existing_entries']
+                }
             else:
-                value = value['existing_entries']
+                values = value['existing_entries'].strip('()').split(', ')
+                # strip any quotes
+                values = [ele.strip().strip('"').strip("'") for ele in values]
+                return dict(zip(self.names, values))
 
-        if self.attr.is_blob:
+        if self.is_blob:
             value = self._process_blob_value(value)
 
-        return value
+        # return value
+        return {self.name: value}
 
     @staticmethod
     def _process_blob_value(value):
@@ -567,10 +644,10 @@ class DynamicField:
 
         if self.foreign_is_manuallookup:
             value = {
-                'existing_entries': value
+                'existing_entries': str(value)
             }
 
-        if self.attr.is_blob and value is not None:
+        if self.is_blob and value is not None:
             # create filepath
             # TODO - not functional atm
             filepath = os.path.join(
@@ -595,7 +672,8 @@ class DynamicField:
                 foreign_dynamicfield.update_field(formfield)
 
             # update field if necessary
-            self._update_field(formfield)
+            if self.singular:
+                self._update_field(formfield)
 
         elif self.is_foreign_key:
             field = getattr(form, self.name)

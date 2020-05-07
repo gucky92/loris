@@ -10,7 +10,7 @@ import pickle
 try:
     from loris import config, conn
     conn()
-except (ModuleNotFoundError, ImportError):
+except (ImportError):
     filepath = __file__
     for i in range(4):
         filepath = os.path.dirname(filepath)
@@ -134,14 +134,14 @@ if __name__ == '__main__':
     primary_dict = {}
     for key in table_class.primary_key:
         value = data['experiment_form'][key]
-        primary_dict[key] = dynamicform.fields[key].format_value(value)
+        primary_dict.update(dynamicform.fields[key].format_value(value))
 
     print(f"Running autoscript for insertion with primary key: {primary_dict}")
 
     # reserve job for insertion
     jobs = config['schemata'][schema].schema.jobs
     jobs.reserve(
-        table_class.full_table_name, primary_dict
+        table_class.table_name, primary_dict
     )
 
     try:
@@ -197,12 +197,12 @@ if __name__ == '__main__':
                     # or just an attribute in the table
     except Exception as e:
         jobs.complete(
-            table_class.full_table_name, primary_dict
+            table_class.table_name, primary_dict
         )
         raise e
     else:
         print(f"Finished autoscript for insertion with "
               f"primary key: {primary_dict}")
         jobs.complete(
-            table_class.full_table_name, primary_dict
+            table_class.table_name, primary_dict
         )

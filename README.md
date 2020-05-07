@@ -6,7 +6,8 @@ Documentation for the different features will be added soon.
 
 ## Requirements
 
-* Anaconda
+* Pip
+* Git
 * Docker
 
 ## Pulling the source code
@@ -14,27 +15,23 @@ Documentation for the different features will be added soon.
 Pull the recent version of Loris:
 ```
 git pull https://github.com/gucky92/loris.git
-cd loris
-git submodule update --init --recursive
 ```
 
 ## Installation of API
 
-Create a new conda environment using the yml file provided and install all submodules:
+Install using the pip command:
 ```
 cd loris
-conda env create -f loris.yml -n loris
-conda activate loris
-pip install -e datajoint-python/.
-pip install -e .
+pip install --user .
 ```
 
 ## Method 1: Running App after API Installation
 
 Create your own `config.json` file. There is a template file called `_config.json`.
 
-If you do not have a running MySQL database yet, you can install a running SQL database using the docker-compose submodule provided by Loris:
+If you do not have a running MySQL database yet, you can install a running SQL database by cloning a mysql-docker git repository and running docker-compose:
 ```
+git clone https://github.com/gucky92/mysql-docker
 cd mysql-docker/slim
 sudo docker-compose up -d
 ```

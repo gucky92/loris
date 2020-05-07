@@ -60,7 +60,8 @@ def delete(schema, table, subtable):
             f' allowed to delete entry: {_id}'
         ), 'error')
         return redirect(redirect_url)
-    message, commit_transaction, conn = to_delete._delete(force=True)
+    message, commit_transaction, conn, already_in_transaction = \
+        to_delete._delete(force=True)
 
     if request.method == 'POST':
         submit = request.form.get('submit', None)

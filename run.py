@@ -1,7 +1,8 @@
 """Run app for debugging
 """
 
-from loris import conn, config
+from loris import conn
+
 
 if __name__ == "__main__":
 
@@ -11,9 +12,6 @@ if __name__ == "__main__":
 
     app.run(
         port=1234, debug=False,
-        host='0.0.0.0', 
-        ssl_context='adhoc'
+        host='0.0.0.0',
+        ssl_context=('cert.pem', 'key.pem')
     )
- 
-    #from waitress import serve
-    #serve(app, port=1234,host='0.0.0.0')

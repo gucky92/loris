@@ -15,7 +15,7 @@
 
     "_app_comment": "app-specific keys",
     "init_database": true,
-    "include_fly": true,
+    "include_fly": false,
     "secret_key": "myprecious",
     "tmp_folder": "/tmp",
     "skip_schemas": ["mysql", "sys", "performance_schema", "tutorial"],

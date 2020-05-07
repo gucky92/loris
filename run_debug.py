@@ -3,12 +3,18 @@
 
 import os
 
-os.environ['OAUTHLIB_INSECURE_TRANSPORT'] = "true"
+# os.environ['OAUTHLIB_INSECURE_TRANSPORT'] = "true"
 
-from loris import conn, config
+from loris import conn
 
-conn()
+if __name__ == "__main__":
 
-from loris.app.app import app
+    conn()
 
-app.run(debug=True)
+    from loris.app.app import app
+
+    app.run(
+        debug=True,
+        port=1236,
+        # ssl_context=('cert.pem', 'key.pem')
+    )

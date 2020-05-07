@@ -60,7 +60,6 @@ def login():
 def logout():
     # user_configs.pop(current_user.user_name, None)
     logout_user()
-    config.disconnect_ssh()
     flash('Successful logout!')
     return redirect(url_for('login'))
 

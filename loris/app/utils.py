@@ -180,12 +180,12 @@ def draw_helper(obj=None, type='table', only_essentials=False):
     # setup of graphviz
     graph_attr = {
         'size': '12, 12', 'rankdir': 'LR', 'splines': 'ortho',
-        'fontname':'helvetica'
+        'fontname': 'helvetica'
     }
     node_attr = {
         'style': 'filled, rounded', 'shape': 'record', 'align': 'center',
         'ranksep': '0.1', 'fontsize': '10',
-        'penwidth': '1.5', 'height': '0.1', 'fontname':'helvetica'
+        'penwidth': '1.5', 'height': '0.1', 'fontname': 'helvetica'
     }
     edge_attr = {
         'arrowsize': '0.7',

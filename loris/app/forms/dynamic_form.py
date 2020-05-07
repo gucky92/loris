@@ -120,13 +120,41 @@ class DynamicForm:
 
         fields = {}
 
+        reserved = []
+        self.table.connection.dependencies.load()
+        parents = self.table.connection.dependencies.parents(self.table.full_table_name)
+        for table_name, table_info in parents.items():
+            if len(table_info['attr_map']) > 1:
+                attr_list = []
+                name_list = []
+                for name in table_info['attr_map']:
+                    if name in self.skip or name in reserved:
+                        continue
+                    # reserve and add to attribute list
+                    reserved.append(name)
+                    name_list.append(name)
+                    attr = self.table.heading.attributes[name]
+                    attr_list.append(attr)
+                # empty attribute list
+                if not attr_list:
+                    continue
+                field = DynamicField(self.table, attr_list)
+                fields['___'.join(name_list)] = field
+
         for name, attr in self.table.heading.attributes.items():
-            if name in self.skip:
+            if name in self.skip or name in reserved:
                 continue
             field = DynamicField(self.table, attr)
             fields[name] = field
 
         return fields
+
+    @property
+    def keys(self):
+        """keys in fields
+        """
+
+        return list(self.fields.keys())
 
     def get_part_fields(self):
         """get part fields attribute
@@ -277,14 +305,15 @@ class DynamicForm:
                         _part_id = None
                     else:
                         # update with part entry that exist
-                        _part_primary = {
-                            key: part_form.fields[key].format_value(value)
-                            for key, value in f_dict.items()
+                        _part_primary = {}
+                        for key, value in f_dict.items():
                             if (
                                 key in part_form.table.primary_key
                                 and key not in self.table.primary_key
-                            )
-                        }
+                            ):
+                                _part_primary.update(
+                                    part_form.fields[key].format_value(value)
+                                )
                         _part_id = {**_id, **_part_primary}
                     # insert into part table
                     part_form._insert(
@@ -326,7 +355,7 @@ class DynamicForm:
 
         for key, value in formatted_dict.items():
             if key in self.fields:
-                insert_dict[key] = self.fields[key].format_value(value)
+                insert_dict.update(self.fields[key].format_value(value))
 
         if _id is None or kwargs.get('replace', False):
             truth = True
@@ -356,7 +385,7 @@ class DynamicForm:
             reserved = (
                 jobs
                 & {
-                    'table_name': self.table.full_table_name,
+                    'table_name': self.table.table_name,
                     'key_hash': hash_key_values(primary_dict)
                 }
             )
@@ -405,6 +434,30 @@ class DynamicForm:
 
         return primary_dict
 
+    def _prepare_populate_dict(self, readonly, formatted_dict, is_edit=False):
+
+        populate_dict = {}
+
+        for key in self.keys:
+            if key in formatted_dict:
+                value = formatted_dict[key]
+                if is_edit and key in self.table.primary_key:
+                    readonly.append(key)
+            elif '___' in key:
+                value = tuple(
+                    [formatted_dict[key] for key in key.split('___')]
+                )
+                if (
+                    is_edit
+                    and not (set(key.split('___'))
+                             - set(self.table.primary_key))
+                ):
+                    readonly.append(key)
+            # add to populate dict
+            populate_dict[key] = self.fields[key].prepare_populate(value)
+
+        return populate_dict
+
     def populate_form(
         self, restriction, form, is_edit=False, **kwargs
     ):
@@ -418,11 +471,9 @@ class DynamicForm:
             entry
         ).proj(*self.non_blobs).fetch1()  # proj non_blobs?
 
-        for key, value in formatted_dict.items():
-            formatted_dict[key] = self.fields[key].prepare_populate(value)
-
-            if is_edit and key in self.table.primary_key:
-                readonly.append(key)
+        populate_dict = self._prepare_populate_dict(
+            readonly, formatted_dict, is_edit=is_edit
+        )
 
         # populate part tables
         for part_table in self.table.part_tables:
@@ -430,23 +481,21 @@ class DynamicForm:
                 part_table & restriction
             ).proj(*part_table.heading.non_blobs).fetch(as_dict=True)
             # proj non_blobs?
-            formatted_dict[part_table.name] = []
+            populate_dict[part_table.name] = []
             for part_formatted_dict in part_formatted_list_dict:
-                formatted_dict[part_table.name].append({})
-                for key, value in part_formatted_dict.items():
-                    if key in self.part_fields[part_table.name].fields:
-                        formatted_dict[part_table.name][-1][key] = \
-                            self.part_fields[
-                                part_table.name
-                            ].fields[key].prepare_populate(value)
 
-                        if is_edit and key in part_table.primary_key:
-                            readonly.append(key)
+                part_populate_dict = self.part_fields[
+                    part_table.name
+                ]._prepare_populate_dict(
+                    readonly, part_formatted_dict, is_edit=is_edit
+                )
+
+                populate_dict[part_table.name].append(part_populate_dict)
 
         # update with kwargs
-        formatted_dict.update(kwargs)
+        populate_dict.update(kwargs)
 
-        form.populate_form(formatted_dict)
+        form.populate_form(populate_dict)
         return readonly
 
     def update_fields(self, form):

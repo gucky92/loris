@@ -5,7 +5,6 @@ from flask_login import UserMixin
 import datajoint as dj
 
 from loris import config
-from loris.settings import Config
 from loris.errors import LorisError
 
 
@@ -66,8 +65,9 @@ class User(UserMixin):
     def check_password(self, password):
         # check password in mysql database
         try:
-            dj.conn(
-                None, self.user_name, password,
+            config.conn(
+                user=self.user_name,
+                password=password,
                 reset=True
             )
             success = True

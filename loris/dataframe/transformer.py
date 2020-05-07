@@ -1,12 +1,18 @@
-"""Transformer class
+"""
+(c) Matthias Christenson
+
+Transformer class
+-----------------
+Class to transform a wide pandas DataFrame, as it may be obtained from a
+database model like datajoint, into a long dataframe format optimal for
+plotting and groupby computations.
 """
 
 import re
 
 import pandas as pd
-import numpy as np
 
-RESERVED_COLUMNS = {'func_result', 'max_depth', 'dropna', 'transformer'}
+RESERVED_COLUMNS = {'applyfunc_result', 'max_depth', 'dropna', 'transformer'}
 
 
 class Transformer:
@@ -152,7 +158,7 @@ class Transformer:
         transformer : callable
             function called on each cell for each "data column" to create
             a new pandas.Series. If the "data columns" only contain array-like
-            objects the default function <iter> is sufficient. If the
+            objects the default function `iter` is sufficient. If the
             "data columns" also contain other objects such as dictionaries,
             it may be necessary to provide a custom callable.
         max_depth : int
@@ -166,7 +172,7 @@ class Transformer:
             Drop rows in long dataframe where all "data columns" are NaN.
         set_df : bool
             Whether to set the df attribute to the resulting
-            long dataframe.
+            long dataframe. If True, to_long will return self.
         **shared_axes : dict
             Specify if two or more "data columns" share axes. The keyword
             will correspond to what the column will be called in the long
@@ -226,7 +232,7 @@ class Transformer:
 
         if set_df:
             self._df = df
-            return
+            return self
         else:
             return df
 
@@ -265,6 +271,13 @@ class Transformer:
             return self.__class__(selected_table)
         else:
             return selected_table
+
+    def __getattr__(self, name):
+        if hasattr(self.table, name):
+            return getattr(self.table, name)
+        else:
+            raise AttributeError(f'{self.__class__.__name__} does '
+                                 f'not have attribute {name}.')
 
     def cols_tolong(self, *cols, **kwargs):
         """Same as tolong but only applied to specific columns
@@ -321,7 +334,8 @@ class Transformer:
         func : callable
             Function to apply.
         new_col_name : str
-            Name of computed new col.
+            Name of computed new col. If None, new_col_name will be
+            `applyfunc_result`.
         *args : tuple
             Arguments passed to function. Each argument should be a column
             in the dataframe. This value is passed instead of the string.
@@ -331,7 +345,7 @@ class Transformer:
             Same as *args just as keyword arguments.
         """
         if new_col_name is None:
-            new_col_name = 'func_result'
+            new_col_name = 'applyfunc_result'
         self.table[new_col_name] = self.table.reset_index().apply(
             lambda x: func(
                 *(x[arg] for arg in args),

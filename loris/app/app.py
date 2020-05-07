@@ -8,6 +8,7 @@ import dash_html_components as html
 
 from loris import config
 from loris.app.login import User
+from loris.app.pymysql_flask import MySQL
 
 
 if config['init_database']:
@@ -26,7 +27,6 @@ class LorisApp(Flask):
     def session_refresh(self):
         config.refresh()
         # for testing when refresh happens
-        config.refresh()
         self.config['schemata'] = list(config['schemata'].keys())
         self.config['tables'], self.config['autotables'] = \
             config.tables_to_list()
@@ -36,9 +36,8 @@ app = LorisApp(__name__)
 app.secret_key = config['secret_key']
 app.config['include_fly'] = config['include_fly']
 app.config['external_wiki'] = config['external_wiki']
-app.config['schemata'] = list(config['schemata'].keys())
-app.config['tables'], app.config['autotables'] = config.tables_to_list()
 
+mysql = MySQL(app)
 login_manager = LoginManager(app)
 
 # Test of dash app
