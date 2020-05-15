@@ -100,6 +100,14 @@ class PartTableCreationForm(NoCsrfForm, FormMixin):
 
 def dynamic_autoscriptform():
 
+    from loris.app.app import app
+
+    tables = [
+        f"{schema}.{name}"
+        for schema, names in app.config['tables'].items()
+        for name in names
+    ]
+
     class AutoscriptForm(Form, FormMixin):
         autoscript = SelectField(
             'autoscript',
@@ -117,7 +125,7 @@ def dynamic_autoscriptform():
             choices=[
                 (ele, ele)
                 for ele in
-                config['autoscript_tables']
+                tables
             ]
         )
 

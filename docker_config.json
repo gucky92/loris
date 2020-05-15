@@ -41,7 +41,6 @@
     "administrators": ["administrator"],
     "wiki_folder": "wiki",
     "autoscript_folder": "autoscripts",
-    "autoscript_tables": ["imaging.TwoPhotonRecording"],
     "external_wiki": "#",
 
     "_ssh_comment": "keys for SSH tunneling of MySQL database. See: https://sshtunnel.readthedocs.io/en/latest/",

@@ -26,12 +26,10 @@ class FilesMixin:
     """Part table mixin for given a master table multiple files.
     """
 
-    master_name = None
-
     @property
     def definition(self):
-        return f"""
-        -> {self.master_name}
+        return """
+        -> master
         -> core.FileLookupName
         ---
         a_file : attach@attachstore
@@ -42,12 +40,10 @@ class DataMixin:
     """Part table mixin for given a master table multiple files.
     """
 
-    master_name = None
-
     @property
     def definition(self):
-        return f"""
-        -> {self.master_name}
+        return """
+        -> master
         -> core.DataLookupName
         ---
         a_datum : blob@datastore
@@ -59,12 +55,10 @@ class ExtensionMixin:
     (not actual files).
     """
 
-    master_name = None
-
     @property
     def definition(self):
-        return f"""
-        -> {self.master_name}
+        return """
+        -> master
         -> core.ExtensionLookupName
         ---
         an_extension : varchar(63)

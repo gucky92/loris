@@ -60,7 +60,7 @@ class LookupName(dj.AttributeAdapter):
             return
 
         if isinstance(obj, str):
-            obj = obj.strip().lower()
+            obj = obj.strip() # .lower() - removed since MySQL does not distinguish
         else:
             raise dj.DataJointError(
                 f"lookup name '{obj}' must be of type "

@@ -42,7 +42,7 @@ class WholeCellRecording(dj.Manual):
     """
 
     class Files(FilesMixin, dj.Part):
-        master_name = "WholeCellRecording"
+        pass
 
     class Data(DataMixin, dj.Part):
-        master_name = "WholeCellRecording"
+        pass

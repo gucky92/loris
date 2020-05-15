@@ -6,7 +6,7 @@ import datajoint as dj
 from loris.database.schema.base import PRIMARY_NAME, COMMENTS, DESCRIPTION, ManualLookup
 from loris.database.schema.experimenters import Experimenter
 from loris.database.attributes import truebool, tarfolder, link
-from loris.database.attributes import lookupname
+from loris.database.attributes import lookupname, pickledata
 
 
 schema = dj.Schema('equipment')
@@ -25,6 +25,11 @@ class Manufacturer(ManualLookup, dj.Manual):
 @schema
 class SystemType(ManualLookup, dj.Manual):
     primary_comment = 'type of system - e.g. led_setup, ephys_rig'
+
+
+@schema
+class MeasurementType(ManualLookup, dj.Manual):
+    primary_comment = 'type of measurement - e.g. led_intensity'
 
 
 @schema
@@ -65,3 +70,18 @@ class System(dj.Manual):
         ---
         -> Piece
         """
+
+
+@schema
+class Measurement(dj.Manual):
+    definition = f"""
+    -> System
+    timestamp = CURRENT_TIMESTAMP : timestamp
+    ---
+    -> Experimenter
+    -> MeasurementType
+    measurement_data = null : blob@datastore
+    measurement_file = null : attach@attachstore
+    {DESCRIPTION}
+    {COMMENTS}
+    """

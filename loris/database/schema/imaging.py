@@ -31,10 +31,10 @@ class TwoPhotonRecording(dj.Manual):
     """
 
     class Files(FilesMixin, dj.Part):
-        master_name = "TwoPhotonRecording"
+        pass
 
     class Data(DataMixin, dj.Part):
-        master_name = "TwoPhotonRecording"
+        pass
 
 
 @schema
@@ -62,10 +62,10 @@ class RawTwoPhotonData(dj.AutoImported):
     """
 
     class Data(DataMixin, dj.Part):
-        master_name = "RawTwoPhotonData"
+        pass
 
     class Files(FilesMixin, dj.Part):
-        master_name = "RawTwoPhotonData"
+        pass
 
 
 @schema
@@ -79,10 +79,10 @@ class MotionCorrectedData(dj.AutoComputed):
     """
 
     class Data(DataMixin, dj.Part):
-        master_name = "MotionCorrectedData"
+        pass
 
     class Files(FilesMixin, dj.Part):
-        master_name = "MotionCorrectedData"
+        pass
 
 
 @schema
@@ -93,10 +93,10 @@ class ExtractedData(dj.AutoComputed):
     """
 
     class Data(DataMixin, dj.Part):
-        master_name = "ExtractedData"
+        pass
 
     class Files(FilesMixin, dj.Part):
-        master_name = "ExtractedData"
+        pass
 
     class Roi(dj.Part):
         definition = """
