@@ -12,6 +12,7 @@ import datajoint as dj
 
 from loris.database.mixin import Placeholder, ProcessMixin
 from loris.errors import LorisSerializationError
+from loris.io import spickledumps, spickleloads
 
 
 class TrueBool(dj.AttributeAdapter):
@@ -25,6 +26,27 @@ class TrueBool(dj.AttributeAdapter):
 
     def get(self, value):
         return bool(value)
+
+
+class SavePickleMixin:
+
+    def put(self, obj):
+        if obj is None:
+            return
+        return spickledumps(obj)
+
+    def get(self, value):
+        return spickleloads(value)
+
+
+class PickleBlob(SavePickleMixin, dj.AttributeAdapter):
+
+    attribute_type = 'longblob'
+
+
+class PickleData(SavePickleMixin, dj.AttributeAdapter):
+
+    attribute_type = 'blob@datastore'
 
 
 class LookupName(dj.AttributeAdapter):
@@ -368,6 +390,8 @@ attachplaceholder = AttachPlaceholder()
 lookupname = LookupName()
 email = Email()
 phone = Phone()
+pickledata = PickleData()
+pickleblob = PickleBlob()
 
 custom_attributes_dict = {
     'chr': chr,
@@ -385,5 +409,7 @@ custom_attributes_dict = {
     'lookupname': lookupname,
     'email': email,
     'phone': phone,
-    'listintervals': listintervals
+    'listintervals': listintervals,
+    'pickledata': pickledata,
+    'pickleblob': pickleblob
 }

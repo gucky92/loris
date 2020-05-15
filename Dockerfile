@@ -1,10 +1,10 @@
 # this is an official Python runtime, used as the parent image
-FROM continuumio/anaconda3
+FROM python:3.6.5-slim
 
 ADD . /app
 WORKDIR /app
 RUN apt-get update && apt-get install netcat -y
-RUN pip install --user .
+RUN pip install -r requirements.txt
 # unblock port 80 for the Flask app to run on
 WORKDIR /app
 EXPOSE 1234
