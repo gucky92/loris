@@ -41,7 +41,6 @@ class Piece(dj.Manual):
     -> Manufacturer
     model_name : varchar(255) # standard model name by manufacturer
     link = null : <link>
-    piece_data = null : blob@datastore # python objects for the piece
     piece_file = null : attach@attachstore # file(s) related to piece
     {DESCRIPTION}
     {COMMENTS}
@@ -57,7 +56,6 @@ class System(dj.Manual):
     -> SystemType
     date_created : date # when was the system created
     active = 1 : <truebool> # is the system active?
-    system_data = null : blob@datastore # python objects for the whole system
     system_file = null : attach@attachstore # file(s) related to the system
     {DESCRIPTION}
     {COMMENTS}
@@ -70,18 +68,3 @@ class System(dj.Manual):
         ---
         -> Piece
         """
-
-
-@schema
-class Measurement(dj.Manual):
-    definition = f"""
-    -> System
-    timestamp = CURRENT_TIMESTAMP : timestamp
-    ---
-    -> Experimenter
-    -> MeasurementType
-    measurement_data = null : blob@datastore
-    measurement_file = null : attach@attachstore
-    {DESCRIPTION}
-    {COMMENTS}
-    """

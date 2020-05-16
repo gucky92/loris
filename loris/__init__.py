@@ -8,7 +8,9 @@ from loris.errors import LorisError
 
 os.environ['DJ_SUPPORT_ADAPTED_TYPES'] = "TRUE"
 
-config = Config.load()
+loris_config_file = os.environ.get('LORIS_CONFIG_FILE', None)
+
+config = Config.load(loris_config_file)
 conn = config.conn
 
 

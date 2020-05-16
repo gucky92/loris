@@ -62,15 +62,19 @@ EXPANDUSER_FIELDS = (
 class Config(dict):
 
     @classmethod
-    def load(cls):
+    def load(cls, config_file):
         """load configuration class and perform necessary checks
         """
 
-        root_dir = os.path.split(os.path.split(__file__)[0])[0]
-        config_file = os.path.join(root_dir, 'config.json')
+        if config_file is None:
+            root_dir = os.path.split(os.path.split(__file__)[0])[0]
+            config_file = 'loris_config.json'
 
-        if not os.path.exists(config_file):
-            config_file = os.path.join(root_dir, DOCKER_CONFIG)
+            if not os.path.exists(config_file):
+                config_file = os.path.join(root_dir, 'config.json')
+
+            if not os.path.exists(config_file):
+                config_file = os.path.join(root_dir, DOCKER_CONFIG)
 
         with open(config_file, 'r') as f:
             config = json.load(f)
