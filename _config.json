@@ -46,5 +46,16 @@
     "_ssh_comment": "keys for SSH tunneling of MySQL database. See: https://sshtunnel.readthedocs.io/en/latest/",
     "ssh_address": null,
     "ssh_username": "administrator",
-    "ssh_pkey": "~/.ssh/id_rsa"
+    "ssh_pkey": "~/.ssh/id_rsa",
+
+    "_slack_comment": "key for slack channels",
+    "slack": [
+        {
+            "token": null,
+            "channel": "#papers",
+            "table": "misc.Paper",
+            "text": "{experimenter} posted a paper\nLink: {link}\nTags: {tags}\nMessage: {comments}",
+            "upon": "insert"
+        }
+    ]
 }

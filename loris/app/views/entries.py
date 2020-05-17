@@ -22,6 +22,7 @@ from loris.app.utils import draw_helper, get_jsontable, user_has_permission
 from loris.utils import save_join
 from loris.app.login import User
 from loris.database.users import grantuser, change_password
+from loris.slack import execute_slack_message
 
 
 
@@ -67,6 +68,14 @@ def delete(schema, table, subtable):
         submit = request.form.get('submit', None)
 
         if submit == 'Delete' and commit_transaction:
+            if table_name in config.slack_tables:
+                if 'delete' in config.slack_tables[table_name].get(
+                    'upon', 'insert'
+                ):
+                    execute_slack_message(
+                        to_delete.fetch1(),
+                        config.slack_tables[table_name]
+                    )
             conn.commit_transaction()
             # reset table (will not cascade)
             dynamicform, form = config.get_dynamicform(

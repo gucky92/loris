@@ -11,6 +11,7 @@ from loris import config
 from loris.app.forms.dynamic_form import DynamicForm
 from loris.app.utils import user_has_permission, get_jsontable
 from loris.utils import save_join
+from loris.slack import execute_slack_message
 
 
 def joined_table_template(
@@ -148,6 +149,39 @@ def form_template(
                 except dj.DataJointError as e:
                     flash(f"{e}", 'error')
                 else:
+                    if table_name in config.slack_tables:
+                        # only works with simple tables at the moment
+                        if (
+                            edit and
+                            (
+                                'edit'
+                                in config.slack_tables[table_name].get(
+                                    'upon', 'insert')
+                                )
+                        ):
+                            execute_slack_message(
+                                (table_class & _id).fetch1(),
+                                config.slack_tables[table_name]
+                            )
+                        elif (
+                            submit == 'Overwrite' and
+                            (
+                                'overwrite'
+                                in config.slack_tables[table_name].get(
+                                    'upon', 'insert')
+                                )
+                        ):
+                            execute_slack_message(
+                                (table_class & _id).fetch1(),
+                                config.slack_tables[table_name]
+                            )
+                        elif 'insert' in config.slack_tables[table_name].get(
+                            'upon', 'insert'
+                        ):
+                            execute_slack_message(
+                                (table_class & _id).fetch1(),
+                                config.slack_tables[table_name]
+                            )
                     dynamicform.reset()
                     flash(f"Data {submit} succeeded.", 'success')
                     return redirect(

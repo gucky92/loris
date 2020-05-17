@@ -61,6 +61,8 @@ EXPANDUSER_FIELDS = (
 
 class Config(dict):
 
+    _slack_tables = None
+
     @classmethod
     def load(cls, config_file):
         """load configuration class and perform necessary checks
@@ -88,6 +90,22 @@ class Config(dict):
         config.datajoint_configuration()
 
         return config
+
+    @property
+    def slacks(self):
+        return self.get('slack', [])
+
+    @property
+    def slack_tables(self):
+        if self._slack_tables is None:
+            slack_tables = {}
+            for slack in self.slacks:
+                if slack.get('token', None) is not None:
+                    slack_tables[slack['table']] = slack
+
+            self._slack_tables = slack_tables
+
+        return self._slack_tables
 
     def connect_ssh(self):
         """ssh tunneling

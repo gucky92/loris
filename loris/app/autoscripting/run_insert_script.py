@@ -146,6 +146,7 @@ if __name__ == '__main__':
 
     try:
         with table_class.connection.transaction:
+            # stops transaction with KeyboardInterrupt
             dynamicform.insert(
                 data['experiment_form'],
                 check_reserved=False
@@ -178,14 +179,15 @@ if __name__ == '__main__':
             if process.stdout is not None:
                 print(process.stdout)
 
-            if process.rc != 0:
-                raise LorisError(f'automatic script error:\n{process.stderr}')
-
             # update/insert fields with data from autoscript
+            # update once it starts running subprocess
             if args.configattr != 'null' and args.configattr is not None:
                 inserting_autoscript_stuff(
                     args.configattr, args.location,
                     table_class, primary_dict)
+
+            # insert output files
+            # TODO option for continous update
             if args.outputattr is not None:
                 for outputattr, outputfile in zip(
                     args.outputattr, args.outputfile
@@ -195,6 +197,10 @@ if __name__ == '__main__':
                         table_class, primary_dict)
                     # field name or <part_table_name:data/file_lookupname>
                     # or just an attribute in the table
+
+            if process.rc != 0:
+                raise LorisError(f'automatic script error:\n{process.stderr}')
+
     except Exception as e:
         jobs.complete(
             table_class.table_name, primary_dict
