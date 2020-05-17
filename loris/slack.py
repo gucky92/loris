@@ -30,10 +30,12 @@ def execute_slack_message(key_info, slack_info):
             channel=channel,
             text=text
         )
-        assert response["message"]["text"] == text
+        # assert response["message"]["text"] == text
     except SlackApiError as e:
         # You will get a SlackApiError if "ok" is False
-        assert e.response["ok"] is False
-        assert e.response["error"]
+        # assert e.response["ok"] is False
+        # assert e.response["error"]
         # str like 'invalid_auth', 'channel_not_found'
-        raise LorisError(f"Got a Slack error: {e.response['error']}")
+        raise LorisError(f"Got a Slack error: {e}")
+
+    return response
