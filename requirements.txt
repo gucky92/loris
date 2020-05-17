@@ -22,4 +22,5 @@ numpy
 pandas
 scipy
 scikit-learn
+slackclient
 git+https://github.com/gucky92/datajoint-python.git
