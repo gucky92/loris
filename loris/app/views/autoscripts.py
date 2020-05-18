@@ -2,13 +2,14 @@
 """
 
 from flask import render_template, request, flash, url_for, redirect, \
-    send_from_directory, session
+    send_from_directory, session, Response
 from functools import wraps
 from flask_login import current_user, login_user, login_required, logout_user
 import datajoint as dj
 import pandas as pd
 import json
 import os
+import time
 
 from loris import config
 from loris.app.app import app
@@ -26,11 +27,65 @@ from loris.app.autoscripting.config_reader import ConfigReader
 from loris.app.subprocess import Run
 
 
-@app.route("/experimentprogress")
-def experimentprogress():
-    """get lastline of ouput
-    """
-    return config.get('subprocess', Run()).lastline
+def stream_template(template_name, **context):
+    app.update_template_context(context)
+    t = app.jinja_env.get_template(template_name)
+    rv = t.stream(context)
+    rv.enable_buffering(5)
+    return rv
+
+
+def gen_stdout(process):
+    lines_inserted = []
+    while process.running:
+        new_lines = [
+            line
+            for line in process.lines
+            if line not in lines_inserted
+        ]
+        if new_lines:
+            lines_inserted.extend(new_lines)
+            # new added lines need to be broken too
+            yield '<br>'.join(new_lines) + "<br>"
+    new_lines = [
+        line
+        for line in process.lines
+        if line not in lines_inserted
+    ]
+    lines_inserted.extend(new_lines)
+    if new_lines:
+        yield '<br>'.join(new_lines)
+
+
+@app.route('/generate_stdout')
+def generate_stdout():
+    return Response(
+        gen_stdout(config.get('subprocess', Run())),
+        mimetype='multipart/x-mixed-replace'
+    )
+
+
+@app.route("/monitorexperiment")
+@login_required
+def monitorexperiment():
+    return render_template(
+        'pages/monitorexperiment.html',
+    )
+    # return Response(generate_stdout())
+    stdout, stderr = config.get('subprocess', Run()).check()
+    return Response(
+        stream_template(
+            'pages/monitorexperiment.html',
+            stdout=stdout, stderr=stderr
+        )
+    )
+
+
+@app.route("/buildexperiment")
+@login_required
+def buildexperiment():
+    flash('Build Experiment functionality not yet implemented', 'warning')
+    return render_template('pages/home.html', user=current_user.user_name)
 
 
 @app.route("/experiment",
@@ -91,6 +146,7 @@ def experiment(table_name, autoscript_folder):
                 )
             ):
                 reader.run(submit)
+                return redirect(url_for('monitorexperiment'))
 
             elif (
                 (submit == 'Save')

@@ -407,6 +407,14 @@ def dynamic_settingstableform(table_class):
                 'nullable': True
             }
         )
+        assign_output = SelectField(
+            'assign output',
+            description='assign the output of the function to a single column',
+            choices=[
+                (str(ele), str(ele))
+                for ele in table_class.heading.secondary_attributes
+            ]
+        )
         restrictions = RestrictionField(
             RESTRICTION_LABEL,
             description=RESTRICTION_DESCRIPTION,
@@ -427,7 +435,6 @@ def dynamic_settingstableform(table_class):
         def get_formatted(self):
 
             formatted = super().get_formatted()
-            print(formatted)
 
             if formatted['fetch_tables'] is not None:
                 formatted['fetch_tables'] = {

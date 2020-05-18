@@ -54,6 +54,8 @@ class Run:
                 self.lines.append(output)
         self.rc = self.p.poll()
         _, self.stderr = self.p.communicate()
+        # add stderr to splitlines (keeplinebreaks)
+        self.lines.extend(self.stderr.splitlines(True))
 
     @property
     def stdout(self):
@@ -61,9 +63,7 @@ class Run:
 
     @property
     def lastline(self):
-        if self.stderr:
-            return self.stderr
-        elif self.lines:
+        if self.lines:
             return self.lines[-1]
         else:
             return ''

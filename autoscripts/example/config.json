@@ -30,7 +30,8 @@
                 "loc": [
                     "subjects.FlyGenotype",
                     ["chr1", "chr2", "chr3"]
-                ]
+                ],
+                "default": null
             },
             "d" : "int",
             "e" : "bool",

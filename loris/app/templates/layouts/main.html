@@ -132,8 +132,8 @@
         <li><a class="dropdown-item" href="{{ url_for('entersubject')}}">Enter Subject</a></li>
         {% endif %}
         <li><a class="dropdown-item" href="{{ url_for('experiment')}}">Start Experiment</a></li>
-        <li><a class="dropdown-item" href="#">Monitor Experiment</a></li>
-        <li><a class="dropdown-item" href="#">Build Experiment</a></li>
+        <li><a class="dropdown-item" href="{{ url_for('monitorexperiment')}}">Monitor Experiment</a></li>
+        <li><a class="dropdown-item" href="{{ url_for('buildexperiment')}}">Build Experiment</a></li>
         </ul>
       </li>
       <li class="nav-item dropdown">
@@ -516,6 +516,10 @@
       .dropdown-menu {
         box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
       }
+    }
+
+    .monospace {
+      font-family: "Lucida Console", Courier, monospace;
     }
   </style>
 

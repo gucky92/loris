@@ -256,7 +256,7 @@ class Extension:
         if not filename:
             return
         extension = os.path.splitext(filename)[-1].strip('.')
-        if extension not in self.ext:
+        if extension.lower() not in self.ext:
             raise ValidationError(
                 f"File {filename} is not of extension: {self.ext}, "
                 f"but extension {extension}."
@@ -585,7 +585,6 @@ class FormMixin:
 
             else:
                 formatted_dict[key] = self.get_field_data(field)
-        print(formatted_dict)
         return formatted_dict
 
 

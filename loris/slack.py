@@ -8,6 +8,7 @@ from slack.errors import SlackApiError
 
 from loris.errors import LorisError
 
+# TODO slack blocks
 
 def execute_slack_message(key_info, slack_info):
     """

@@ -32,7 +32,8 @@ defaults = dict(
             'txt', 'gif', 'svg', 'tif', 'bmp', 'doc', 'docx', 'rtf',
             'odf', 'ods', 'gnumeric', 'abw', 'xls', 'xlsx', 'ini',
             'plist', 'xml', 'yaml', 'yml', 'py', 'js', 'php', 'rb', 'sh',
-            'tgz', 'txz', 'gz', 'bz2', 'jpe', 'jpg', 'pdf'
+            'tgz', 'txz', 'gz', 'bz2', 'jpe', 'jpg', 'pdf',
+            'irradcal', 'cal'  # calibration files
         ]
     ),
     # foreign key select field limit

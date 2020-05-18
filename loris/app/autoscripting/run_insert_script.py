@@ -168,7 +168,8 @@ if __name__ == '__main__':
             while True:
                 length = len(process.lines)
                 if length > lnumbers:
-                    print(''.join(process.lines[lnumbers:length]))
+                    for new_line in process.lines[lnumbers:length]:
+                        print(new_line)
                     lnumbers = length
                 if process.p is not None and process.p.poll() is not None:
                     break
@@ -176,8 +177,11 @@ if __name__ == '__main__':
             if process.thread.is_alive():
                 process.wait()
 
-            if process.stdout is not None:
-                print(process.stdout)
+            length = len(process.lines)
+            if length > lnumbers:
+                for new_line in process.lines[lnumbers:length]:
+                    print(new_line)
+                lnumbers = length
 
             # update/insert fields with data from autoscript
             # update once it starts running subprocess
