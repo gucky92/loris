@@ -11,17 +11,6 @@ from loris.app.login import User
 from loris.app.pymysql_flask import MySQL
 
 
-if config['init_database']:
-    from loris.database.schema import (
-        equipment, experimenters, core
-    )
-
-    if config['include_fly']:
-        from loris.database.schema import (
-            anatomy, imaging, recordings, subjects
-        )
-
-
 class LorisApp(Flask):
 
     def session_refresh(self):
