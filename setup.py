@@ -27,5 +27,5 @@ setup(name='loris',
       author_email='gucky@gucky.eu',
       install_requires=requirements[:-1]+['datajoint @ ' + requirements[-1]],
       keywords='database application',
-      packages=find_namespace_packages(include=["loris.*"])
+      packages=find_namespace_packages(include=["loris", "loris.*"])
 )
