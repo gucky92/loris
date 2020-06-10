@@ -20,6 +20,7 @@ from werkzeug.utils import secure_filename
 from loris.database.attributes import custom_attributes_dict
 from loris.utils import is_manuallookup
 from loris.errors import LorisError
+from loris.io import read_pickle, write_pickle
 
 
 # defaults for application
@@ -54,6 +55,7 @@ defaults = dict(
 )
 AUTOSCRIPT_CONFIG = 'config.json'
 DOCKER_CONFIG = 'docker_config.json'
+GLOBAL_CONFIG = os.path.join(os.path.dirname(__file__), 'global_config.json')
 EXPANDUSER_FIELDS = (
     'tmp_folder',
     'wiki_folder',
@@ -81,8 +83,14 @@ class Config(dict):
             if not os.path.exists(config_file):
                 config_file = os.path.join(root_dir, DOCKER_CONFIG)
 
-        with open(config_file, 'r') as f:
-            config = json.load(f)
+        if os.path.exists(config_file):
+            with open(config_file, 'r') as f:
+                config = json.load(f)
+            with open(GLOBAL_CONFIG, 'w') as f:
+                json.dump(config, f)
+        else:
+            with open(GLOBAL_CONFIG, 'r') as f:
+                config = json.load(f)
 
         config = {**defaults, **config}
         config = cls(config)
