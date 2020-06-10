@@ -1,2 +1,2 @@
-recursive-include dreye/app/templates *
-recursive-include dreye/app/static *
+recursive-include loris/app/templates *
+recursive-include loris/app/static *
