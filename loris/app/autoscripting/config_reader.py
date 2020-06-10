@@ -220,8 +220,8 @@ class ConfigReader:
                 outputfiles = []
                 outputattrs = []
                 for outputfile, outputattr in zip(
-                    self.buttons.get('outputfile', []),
-                    self.buttons.get('outputattr', [])
+                    self.buttons[button].get('outputfile', []),
+                    self.buttons[button].get('outputattr', [])
                 ):
                     outputfiles.extend(["--outputfile", f"{outputfile}"])
                     outputattrs.extend(["--outputattr", f"{outputattr}"])
@@ -242,7 +242,7 @@ class ConfigReader:
                     "--location",
                     f"{self.current_config_file}",
                     "--configattr",
-                    f"{self.buttons.get('configattr', 'null')}",
+                    f"{self.buttons[button].get('configattr', 'null')}",
                 ] + outputfiles + outputattrs
             else:
                 # just run the python script
