@@ -1,0 +1,2 @@
+recursive-include dreye/app/templates *
+recursive-include dreye/app/static *
