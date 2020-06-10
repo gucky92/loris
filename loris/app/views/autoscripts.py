@@ -146,7 +146,7 @@ def experiment(table_name, autoscript_folder):
                 )
             ):
                 reader.run(submit)
-                return redirect(url_for('monitorexperiment'))
+                # return redirect(url_for('monitorexperiment'))
 
             elif (
                 (submit == 'Save')

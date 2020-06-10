@@ -326,6 +326,11 @@
                 {% for button in buttons %}
                 <td align="center"><input class="btn btn-outline-secondary" type=submit value="{{button}}" name="submit"></td>
                 {% endfor %}
+                <td align="center">
+                    <a class="btn btn-outline-warning" href="{{ url_for('monitorexperiment')}}" target="_blank">
+                        Monitor
+                    </a>
+                </td>
             </tr>
             </div>
             <p> </p>
