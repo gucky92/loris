@@ -201,7 +201,7 @@ class AutoscriptedField:
                     f"Column '{columns}' not in table "
                     f"{table.full_table_name}; cannot create field {key}."
                 )
-            if set(columns) - set(table.heading):
+            elif set(columns) - set(table.heading):
                 raise LorisError(
                     f"Columns '{set(columns) - set(table.heading)}' not "
                     f"in table {table.full_table_name}; "
