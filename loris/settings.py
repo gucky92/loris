@@ -5,6 +5,7 @@ import json
 import os
 import sys
 import shutil
+import importlib
 import inspect
 import multiprocessing as mp
 from collections import defaultdict
@@ -48,7 +49,8 @@ defaults = dict(
     assignedgroup_table="AssignedExperimentalProject",
     max_cpu=None,
     init_database=False,
-    include_fly=True
+    include_fly=True,
+    import_schema_module={}
 )
 AUTOSCRIPT_CONFIG = 'config.json'
 DOCKER_CONFIG = 'docker_config.json'
@@ -264,8 +266,38 @@ class Config(dict):
         """refresh container of schemas
         """
         schemata = {}
+
+        # direct loading if possible
+        if self['init_database']:
+            from loris.database.schema import (
+                equipment, experimenters, core, misc
+            )
+
+            schemata['equipment'] = equipment
+            schemata['experimenters'] = experimenters
+            schemata['core'] = core
+
+            if self['include_fly']:
+                from loris.database.schema import (
+                    anatomy, imaging, recordings, subjects
+                )
+
+                schemata['anatomy'] = anatomy
+                schemata['imaging'] = imaging
+                schemata['recordings'] = recordings
+                schemata['subjects'] = subjects
+
+        for schema, module_path in self["import_schema_module"]:
+            # TODO test
+            spec = importlib.util.spec_from_file_location(schema, module_path)
+            module = importlib.util.module_from_spec(spec)
+            spec.loader.exec_module(module)
+            schemata[schema] = module
+
         for schema in dj.list_schemas():
             if schema in self["skip_schemas"]:
+                continue
+            if schema in schemata:
                 continue
             # TODO error messages
             schemata[schema] = dj.VirtualModule(
