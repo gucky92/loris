@@ -120,6 +120,9 @@ if __name__ == '__main__':
     )
 
     args = parser.parse_args()
+    print('output info: ')
+    print(args.outputattr)
+    print(args.outputfile)
     # TODO connect as user?
 
     with open(args.location, 'rb') as f:

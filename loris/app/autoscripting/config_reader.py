@@ -225,6 +225,11 @@ class ConfigReader:
                 ):
                     outputfiles.extend(["--outputfile", f"{outputfile}"])
                     outputattrs.extend(["--outputattr", f"{outputattr}"])
+
+                print('outputs written to:')
+                print(outputfiles)
+                print('outputs attributes:')
+                print(outputattrs)
                 # running the insert script
                 command = [
                     "python",
