@@ -116,7 +116,8 @@ def dynamic_autoscriptform():
                 (ele, os.path.split(ele)[-1])
                 for ele in
                 glob.glob(os.path.join(config['autoscript_folder'], '*'))
-                if os.path.isdir(ele) and not ele.startswith('_')
+                if os.path.isdir(ele)
+                and not os.path.basename(ele).startswith('_')
             ],
             validators=[InputRequired()]
         )
