@@ -8,12 +8,14 @@ import uuid
 import pickle
 import json
 import glob
+import shutil
 import datajoint as dj
 import numpy as np
 from datajoint.schemas import lookup_class_name
 from flask import render_template, request, flash, url_for, redirect
 
 from loris import config, conn
+from loris.errors import LorisError
 from loris.utils import is_manuallookup
 
 
@@ -32,6 +34,20 @@ def datareader(value):
             value = json.load(f)
 
     return value
+
+
+def filereader(value):
+    """
+    Copies filepath to tmp folder with uuid
+    """
+    if not os.path.exists(value):
+        raise LorisError(f"Filepath {value} does not exist.")
+    basename = os.path.basename(value)
+    basename = f"{uuid.uuid4()}_basename"
+    dst = os.path.join(config['tmp_folder'], basename)
+    assert not os.path.exists(dst)
+    shutil.copyfile(value, dst)
+    return dst
 
 
 def user_has_permission(table, user, skip_tables=None):

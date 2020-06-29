@@ -22,7 +22,7 @@ except (ImportError):
 from loris.app.forms.dynamic_form import DynamicForm
 from loris.app.subprocess import Run
 from loris.errors import LorisError
-from loris.app.utils import datareader
+from loris.app.utils import datareader, filereader
 from loris.database.schema.core import DataLookupName, FileLookupName
 
 
@@ -79,7 +79,7 @@ def inserting_autoscript_stuff(attr, value, table_class, primary_dict):
         elif file_subclass(part_table, primary_dict):
             to_insert = get_insert_part_mixin(
                 attr, value, 'file_lookup_name', FileLookupName,
-                'a_file', primary_dict
+                'a_file', primary_dict, func=filereader
             )
         else:
             raise LorisError(f'part table {part_table.name} is not a '
@@ -88,6 +88,8 @@ def inserting_autoscript_stuff(attr, value, table_class, primary_dict):
     elif attr in table_class.heading:
         if table_class.heading[attr].is_blob:
             value = datareader(value)
+        else:
+            value = filereader(value)
         (table_class & primary_dict).save_update(attr, value)
     else:
         raise LorisError(f'attr {attr} does not exist in '
