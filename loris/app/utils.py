@@ -43,7 +43,7 @@ def filereader(value):
     if not os.path.exists(value):
         raise LorisError(f"Filepath {value} does not exist.")
     basename = os.path.basename(value)
-    basename = f"{uuid.uuid4()}_basename"
+    basename = f"{uuid.uuid4()}_{basename}"
     dst = os.path.join(config['tmp_folder'], basename)
     assert not os.path.exists(dst)
     shutil.copyfile(value, dst)
