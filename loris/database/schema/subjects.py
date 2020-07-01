@@ -30,7 +30,6 @@ class FlyGenotype(dj.Manual):
     chr2 : <chr>
     chr3 : <chr>
     chr4 = null : <chr>
-    -> [nullable] CellType
     public_ids = null : <tags>
     {TAGS}
     {COMMENTS}
@@ -68,7 +67,6 @@ class FlyStock(dj.Manual):
     priority = null : enum('1', '2', '3', 'unsure')
     -> [nullable] FlyOrigin
     -> [nullable] FlyCross
-    {COMMENTS}
     """
 
 
