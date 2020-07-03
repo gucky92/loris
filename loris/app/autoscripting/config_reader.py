@@ -323,10 +323,13 @@ class ConfigReader:
             flash(f'entry id {_id} not in existing configurations.', 'error')
             return
 
+        # settings form for diction
         settings_dict = selected_entries.iloc[0].to_dict()
 
         for name, field in self.dynamicform.fields.items():
             if field.is_integer:
+                settings_dict['experiment_form'].pop(name, None)
+            if field.is_datelike:
                 settings_dict['experiment_form'].pop(name, None)
             elif field.foreign_is_manuallookup:
                 fk_field = settings_dict['experiment_form'].get(name, None)
