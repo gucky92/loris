@@ -360,6 +360,35 @@ class AttachPlaceholder(dj.AttributeAdapter, ProcessMixin):
         return self.get_process(Placeholder.read(value))
 
 
+class FolderPath(dj.AttributeAdapter):
+
+    attribute_type = 'varchar(511)'
+
+    def put(self, obj):
+
+        if obj is None:
+            return
+        elif not isinstance(obj, str):
+            raise TypeError(
+                f"Object must be string type, but is {type(obj)}"
+            )
+
+        if not os.path.exists(obj):
+            raise ValueError(
+                f"Path `{obj}` does not exist."
+            )
+
+        if not os.path.isdir(obj):
+            raise ValueError(
+                f"Path `{obj}` is not a directory."
+            )
+
+        return obj
+
+    def get(self, value):
+        return value
+
+
 chr = Chromosome()
 link = Link()
 flyidentifier = FlyIdentifier()
@@ -392,6 +421,7 @@ email = Email()
 phone = Phone()
 pickledata = PickleData()
 pickleblob = PickleBlob()
+folderpath = FolderPath()
 
 custom_attributes_dict = {
     'chr': chr,
@@ -411,5 +441,6 @@ custom_attributes_dict = {
     'phone': phone,
     'listintervals': listintervals,
     'pickledata': pickledata,
-    'pickleblob': pickleblob
+    'pickleblob': pickleblob,
+    'folderpath': folderpath
 }

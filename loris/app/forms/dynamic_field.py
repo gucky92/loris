@@ -71,6 +71,10 @@ class DynamicField:
         return match_type(self.type) == 'UUID'
 
     @property
+    def is_datelike(self):
+        return match_type(self.type) == 'TEMPORAL'
+
+    @property
     def ignore_foreign_fields(self):
         return self._ignore_foreign_fields
 
@@ -411,24 +415,31 @@ class DynamicField:
 
         if sql_type in ('datetime', 'timestamp'):
             if not (self.ignore_foreign_fields and self.in_key):
-                kwargs['default'] = datetime.datetime.today()
+                kwargs['default'] = datetime.datetime.today
             kwargs['label'] += '&emsp;<small>(Y/m/d H:M - e.g. 2020/01/01 11:11)</small>&emsp;'
             return DateTimeField(format='%Y/%m/%d %H:%M', **kwargs)
         elif sql_type == 'time':
             if not (self.ignore_foreign_fields and self.in_key):
-                kwargs['default'] = datetime.datetime.today()
+                kwargs['default'] = datetime.datetime.today
             kwargs['label'] += '&emsp;<small>(H:M - e.g. 11:11)</small>&emsp;'
             return DateTimeField(format='%H:%M', **kwargs)
         elif sql_type == 'date':
             if not (self.ignore_foreign_fields and self.in_key):
-                kwargs['default'] = datetime.date.today()
+                kwargs['default'] = datetime.date.today
             kwargs['label'] += '&emsp;<small>(Y/m/d - e.g. 2020/01/01)</small>&emsp;'
             return DateField(format='%Y/%m/%d', **kwargs)
         elif sql_type == 'year':
             if not (self.ignore_foreign_fields and self.in_key):
-                kwargs['default'] = datetime.date.today()
+                kwargs['default'] = datetime.date.today
             kwargs['label'] += '&emsp;<small>(Y - e.g. 2020)</small>&emsp;'
             return DateField(format='%Y', **kwargs)
+
+    def _get_temporal_default(self):
+        if self.sql_type in ('year', 'date'):
+            if not (self.ignore_foreign_fields and self.in_key):
+                return datetime.date.today
+        elif not (self.ignore_foreign_fields and self.in_key):
+            return datetime.datetime.today
 
     def enum_field(self, kwargs, sql_type):
         """create field for enum
@@ -690,3 +701,6 @@ class DynamicField:
         if self.is_integer:
             field = getattr(form, self.name)
             field.default = self._get_integer_default()
+        if self.is_datelike:
+            field = getattr(form, self.name)
+            field.default = self._get_temporal_default()

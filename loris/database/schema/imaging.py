@@ -7,7 +7,7 @@ from loris.database.schema import (
     subjects, anatomy, equipment, recordings, core
 )
 from loris.database.attributes import truebool, attachplaceholder, tags
-from loris.database.attributes import lookupname
+from loris.database.attributes import lookupname, folderpath
 from loris.database.schema.base import (
     COMMENTS, NEURAL_RECORDING, ManualLookup,
     FilesMixin, DataMixin, ExtensionMixin
@@ -45,6 +45,7 @@ class RawTwoPhotonData(dj.AutoImported):
     rate : float # in Hz
     timestamps : blob@datastore # in seconds
     movie : blob@datastore
+    tiff_folder_location = null : <folderpath>
     imaging_offset = null : float #offset of image acquisition in s
     vout_data = null : blob@datastore
     absolute_time_vout = null : float #offset of voltage output in s
@@ -54,7 +55,7 @@ class RawTwoPhotonData(dj.AutoImported):
     pmt_gain = null : float # photomultiplier gain
     scan_line_rate = null : float # lines imaged per second
     dimension = null : blob # number of pixels on x, y, and z axes
-    location = null : longblob #x, y, and z position of microscope
+    location = null : longblob # x, y, and z position of microscope
     laser_power = null : float # pockels
     laser_wavelength = null : float # in nm
     dwell_time = null : float # in s
