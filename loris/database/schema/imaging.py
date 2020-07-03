@@ -44,7 +44,7 @@ class RawTwoPhotonData(dj.AutoImported):
     ---
     rate : float # in Hz
     timestamps : blob@datastore # in seconds
-    movie : attach@attachstore
+    movie : blob@datastore
     tiff_folder_location = null : <folderpath>
     imaging_offset = null : float #offset of image acquisition in s
     trigger = null : blob@datastore  # recorded trigger
