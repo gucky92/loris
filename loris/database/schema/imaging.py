@@ -58,13 +58,14 @@ class RawTwoPhotonData(dj.AutoImported):
     laser_wavelength = null : float # in nm
     dwell_time = null : float # in s
     microns_per_pixel = null : blob # x, y, z um/px
+    metadata_collection = null : blob@datastore
     """
 
-    class Data(DataMixin, dj.Part):
-        pass
-
-    class Files(FilesMixin, dj.Part):
-        pass
+    # class Data(DataMixin, dj.Part):
+    #     pass
+    #
+    # class Files(FilesMixin, dj.Part):
+    #     pass
 
 
 @schema
@@ -77,11 +78,11 @@ class MotionCorrectedData(dj.AutoComputed):
     movie : blob@datastore
     """
 
-    class Data(DataMixin, dj.Part):
-        pass
-
-    class Files(FilesMixin, dj.Part):
-        pass
+    # class Data(DataMixin, dj.Part):
+    #     pass
+    #
+    # class Files(FilesMixin, dj.Part):
+    #     pass
 
 
 @schema
@@ -91,11 +92,11 @@ class ExtractedData(dj.AutoComputed):
     ---
     """
 
-    class Data(DataMixin, dj.Part):
-        pass
-
-    class Files(FilesMixin, dj.Part):
-        pass
+    # class Data(DataMixin, dj.Part):
+    #     pass
+    #
+    # class Files(FilesMixin, dj.Part):
+    #     pass
 
     class Roi(dj.Part):
         definition = """
