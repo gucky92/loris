@@ -47,11 +47,9 @@ class RawTwoPhotonData(dj.AutoImported):
     movie : blob@datastore
     tiff_folder_location = null : <folderpath>
     imaging_offset = null : float #offset of image acquisition in s
-    vout_data = null : blob@datastore
-    absolute_time_vout = null : float #offset of voltage output in s
-    vin_data = null : blob@datastore
-    absolute_time_vin = null : float #offset of voltage input in s
-    field_of_view = null : blob # width, height and depth of image in micrometers
+    trigger = null : blob@datastore  # recorded trigger
+    trigger_timestamps = null : blob@datastore
+    field_of_view = null : blob # width, height and depth of image in um
     pmt_gain = null : float # photomultiplier gain
     scan_line_rate = null : float # lines imaged per second
     dimension = null : blob # number of pixels on x, y, and z axes
