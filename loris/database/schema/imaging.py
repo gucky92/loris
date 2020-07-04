@@ -61,12 +61,6 @@ class RawTwoPhotonData(dj.AutoImported):
     metadata_collection = null : blob@datastore
     """
 
-    # class Data(DataMixin, dj.Part):
-    #     pass
-    #
-    # class Files(FilesMixin, dj.Part):
-    #     pass
-
 
 @schema
 class MotionCorrectedData(dj.AutoComputed):
@@ -78,12 +72,6 @@ class MotionCorrectedData(dj.AutoComputed):
     movie : blob@datastore
     """
 
-    # class Data(DataMixin, dj.Part):
-    #     pass
-    #
-    # class Files(FilesMixin, dj.Part):
-    #     pass
-
 
 @schema
 class ExtractedData(dj.AutoComputed):
@@ -91,12 +79,6 @@ class ExtractedData(dj.AutoComputed):
     -> MotionCorrectedData
     ---
     """
-
-    # class Data(DataMixin, dj.Part):
-    #     pass
-    #
-    # class Files(FilesMixin, dj.Part):
-    #     pass
 
     class Roi(dj.Part):
         definition = """
