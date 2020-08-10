@@ -85,7 +85,7 @@ class PrefixId(dj.AttributeAdapter):
     Prefix id
     """
 
-    attribute_type = 'int auto_increment'
+    attribute_type = 'int'
 
     def __init__(self, prefix=''):
         self.prefix = prefix
