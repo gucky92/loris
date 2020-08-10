@@ -85,7 +85,7 @@ class PrefixId(dj.AttributeAdapter):
     Prefix id
     """
 
-    attribute_type = 'int'
+    attribute_type = 'varchar(127)'
 
     def __init__(self, prefix=''):
         self.prefix = prefix
@@ -110,10 +110,10 @@ class PrefixId(dj.AttributeAdapter):
                 f"Prefix Id must be an integer; but is of type `{type(obj)}`."
             )
 
-        return obj
+        return f"{self.prefix}{obj}"
 
     def get(self, value):
-        return f"{self.prefix}{value}"
+        return value
 
 
 class ListString(dj.AttributeAdapter):

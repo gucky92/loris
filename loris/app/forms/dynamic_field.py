@@ -35,6 +35,7 @@ from loris.app.forms.formmixin import (
     ParentInputRequired, Always, LookupNameValidator, PutValidator,
     HtmlLabelSelectWidget, TagDictField
 )
+from loris.database.attributes import PrefixId
 
 
 class DynamicField:
@@ -64,10 +65,7 @@ class DynamicField:
     @property
     def is_integer(self):
         # won't work with adapted types
-        return (
-            (match_type(self.type) == 'INTEGER')
-            or (match_type(self.sql_type) == 'INTEGER')
-        )
+        return match_type(self.type) == 'INTEGER'
 
     @property
     def is_uuid(self):
@@ -144,6 +142,12 @@ class DynamicField:
     @property
     def adapter(self):
         return self.attr.adapter
+
+    @property
+    def is_prefixid(self):
+        return (
+            match_type(self.type) == 'ADAPTED'
+        ) and isinstance(self.adapted, PrefixId)
 
     @property
     def is_blob(self):
@@ -388,6 +392,20 @@ class DynamicField:
             ) + 1
         return default
 
+    def _get_prefixid_default(self):
+        default = None
+        if self.ignore_foreign_fields and self.in_key:
+            pass
+        elif len(self.table()) == 0:
+            default = f'{self.adapter.prefix}1'
+        elif self.in_key and len(self.table.heading.primary_key) == 1:
+            default = self.table.proj().fetch()[self.name]
+            default = pd.Series(
+                default
+            ).str[len(self.adapter.prefix):].astype(int).max() + 1
+            default = f'{self.adapted.prefix}{default}'
+        return default
+
     def float_field(self, kwargs):
         return FloatField(**kwargs)
 
@@ -497,6 +515,9 @@ class DynamicField:
 
         attr_type_name = self.type.strip('<>')
         adapter = config['custom_attributes'].get(attr_type_name, None)
+
+        if self.is_prefixid:
+            kwargs['default'] = self._get_prefixid_default()
 
         if adapter is None:
             pass
@@ -707,3 +728,6 @@ class DynamicField:
         if self.is_datelike:
             field = getattr(form, self.name)
             field.default = self._get_temporal_default()
+        if self.is_prefixid:
+            field = getattr(form, self.name)
+            field.default = self._get_prefixid_default()
