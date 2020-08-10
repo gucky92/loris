@@ -8,7 +8,7 @@ from loris.database.schema.anatomy import CellType
 from loris.database.schema.base import (
     ManualLookup, COMMENTS, PRIMARY_NAME, TAGS
 )
-from loris.database.attributes import chr, link, flyidentifier, crossschema
+from loris.database.attributes import chr, link, flyidentifier, crossschema, stockid
 from loris.database.attributes import lookupname, tags
 
 
@@ -58,7 +58,7 @@ class StockGroup(ManualLookup, dj.Manual):
 @schema
 class FlyStock(dj.Manual):
     definition = f"""
-    stock_id : int auto_increment
+    stock_id : <stockid>  # stock id refers to the physical stock number
     ---
     -> FlyGenotype
     -> Experimenter

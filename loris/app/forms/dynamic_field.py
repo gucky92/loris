@@ -64,7 +64,10 @@ class DynamicField:
     @property
     def is_integer(self):
         # won't work with adapted types
-        return match_type(self.type) == 'INTEGER'
+        return (
+            (match_type(self.type) == 'INTEGER')
+            or (match_type(self.sql_type) == 'INTEGER')
+        )
 
     @property
     def is_uuid(self):

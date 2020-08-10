@@ -80,6 +80,42 @@ class LookupName(dj.AttributeAdapter):
         return value
 
 
+class PrefixId(dj.AttributeAdapter):
+    """
+    Prefix id
+    """
+
+    attribute_type = 'int auto_increment'
+
+    def __init__(self, prefix=''):
+        self.prefix = prefix
+
+    def put(self, obj):
+        if obj is None:
+            return
+
+        if isinstance(obj, str):
+            if obj.startswith(self.prefix):
+                obj = obj[len(self.prefix):]
+            if obj.isnumeric():
+                obj = int(obj)
+            else:
+                raise dj.DataJointError(
+                    "Prefix Id must be an integer."
+                )
+        elif isinstance(obj, int):
+            pass
+        else:
+            raise dj.DataJointError(
+                "Prefix Id must be an integer."
+            )
+
+        return obj
+
+    def get(self, value):
+        return f"{self.prefix}{value}"
+
+
 class ListString(dj.AttributeAdapter):
 
     attribute_type = 'varchar(4000)'
@@ -422,6 +458,7 @@ phone = Phone()
 pickledata = PickleData()
 pickleblob = PickleBlob()
 folderpath = FolderPath()
+stockid = PrefixId(prefix='s')
 
 custom_attributes_dict = {
     'chr': chr,
@@ -442,5 +479,6 @@ custom_attributes_dict = {
     'listintervals': listintervals,
     'pickledata': pickledata,
     'pickleblob': pickleblob,
-    'folderpath': folderpath
+    'folderpath': folderpath,
+    'stockid': stockid
 }
