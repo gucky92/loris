@@ -147,7 +147,7 @@ class DynamicField:
     def is_prefixid(self):
         return (
             match_type(self.type) == 'ADAPTED'
-        ) and isinstance(self.adapted, PrefixId)
+        ) and isinstance(self.adapter, PrefixId)
 
     @property
     def is_blob(self):
@@ -403,7 +403,7 @@ class DynamicField:
             default = pd.Series(
                 default
             ).str[len(self.adapter.prefix):].astype(int).max() + 1
-            default = f'{self.adapted.prefix}{default}'
+            default = f'{self.adapter.prefix}{default}'
         return default
 
     def float_field(self, kwargs):
