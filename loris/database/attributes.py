@@ -5,7 +5,7 @@ import re
 import os
 import shutil
 import json
-from numbers import Number
+from numbers import Number, Integral
 
 import numpy as np
 import datajoint as dj
@@ -101,13 +101,13 @@ class PrefixId(dj.AttributeAdapter):
                 obj = int(obj)
             else:
                 raise dj.DataJointError(
-                    "Prefix Id must be an integer."
+                    "Prefix Id must be an integer, but string is `{obj}`."
                 )
-        elif isinstance(obj, int):
+        elif isinstance(obj, Integral):
             pass
         else:
             raise dj.DataJointError(
-                "Prefix Id must be an integer."
+                f"Prefix Id must be an integer; but is of type `{type(obj)}`."
             )
 
         return obj
