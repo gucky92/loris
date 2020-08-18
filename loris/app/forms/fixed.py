@@ -413,7 +413,7 @@ def dynamic_settingstableform(table_class):
             description='assign the output of the function to a single column',
             choices=[('NULL', 'NULL')]+[
                 (str(ele), str(ele))
-                for ele in table_class.child_table.heading.secondary_attributes
+                for ele in table_class.child_table().heading.secondary_attributes
             ]
         )
         restrictions = RestrictionField(
