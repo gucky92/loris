@@ -62,7 +62,8 @@ def user_has_permission(table, user, skip_tables=None):
         return True
 
     if skip_tables is None:
-        skip_tables = []
+        skip_tables = config['tables_skip_permission']
+        # skip_tables = []
 
     # always add table name
     skip_tables.append(table.full_table_name)

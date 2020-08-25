@@ -51,7 +51,9 @@ defaults = dict(
     max_cpu=None,
     init_database=False,
     include_fly=True,
-    import_schema_module={}
+    import_schema_module={},
+    tables_skip_permission=['`subjects`.`fly_stock`']
+    # tables skipped to check for permission
 )
 AUTOSCRIPT_CONFIG = 'config.json'
 DOCKER_CONFIG = 'docker_config.json'
