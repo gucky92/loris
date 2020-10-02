@@ -24,11 +24,11 @@ from loris.io import read_pickle, write_pickle
 
 
 # defaults for application
-defaults = dict(
-    textarea_startlength=512,
+defaults = {
+    "textarea_startlength": 512,
     # UPLOAD EXTENSIONS
-    extensions=['csv', 'npy', 'json', 'pkl'],
-    attach_extensions=(
+    "extensions": ['csv', 'npy', 'json', 'pkl'],
+    "attach_extensions": (
         ['csv', 'npy', 'json', 'pkl'] + [
             'tiff', 'png', 'jpeg', 'mpg', 'hdf', 'hdf5', 'tar', 'zip',
             'txt', 'gif', 'svg', 'tif', 'bmp', 'doc', 'docx', 'rtf',
@@ -39,22 +39,62 @@ defaults = dict(
         ]
     ),
     # foreign key select field limit
-    fk_dropdown_limit=200,
-    user_schema="experimenters",
-    user_table="Experimenter",
-    user_name="experimenter",
-    group_schema="experimenters",
-    group_table="ExperimentalProject",
-    group_name="experimental_project",
-    assignedgroup_schema="experimenters",
-    assignedgroup_table="AssignedExperimentalProject",
-    max_cpu=None,
-    init_database=False,
-    include_fly=True,
-    import_schema_module={},
-    tables_skip_permission=['`subjects`.`fly_stock`']
+    "fk_dropdown_limit": 200,
+    "user_schema": "experimenters",
+    "user_table": "Experimenter",
+    "user_name": "experimenter",
+    "group_schema": "experimenters",
+    "group_table": "ExperimentalProject",
+    "group_name": "experimental_project",
+    "assignedgroup_schema": "experimenters",
+    "assignedgroup_table": "AssignedExperimentalProject",
+    "max_cpu": None,
+    "init_database": False,
+    "include_fly": True,
+    "import_schema_module": {},
+    "tables_skip_permission": ['`subjects`.`fly_stock`'],
+    "filestores": {
+        "attachstore": "~/attachstore",
+        "datastore": "~/datastore"
+    },
+    "database.host": "127.0.0.1",
+    "database.port": 3306,
+    "connection.charset": "utf8",
+    "enable_python_native_blobs": True,
+    "enable_python_pickle_blobs": True,
+    "enable_automakers": True,
+    "secret_key": "myprecious",
+    "tmp_folder": "~/tmp",
+    "skip_schemas": ["mysql", "sys", "performance_schema", "tutorial"],
+    "user_schema": "experimenters",
+    "user_table": "Experimenter",
+    "user_name": "experimenter",
+    "user_active": "active",
+    "group_schema": "experimenters",
+    "group_table": "ExperimentalProject",
+    "group_name": "experimental_project",
+    "assignedgroup_schema": "experimenters",
+    "assignedgroup_table": "AssignedExperimentalProject",
+    "standard_password": "fruitfly",
+    "administrator_info": {
+        "experimenter": "administrator",
+        "first_name": "FIRSTNAME",
+        "last_name": "LASTNAME",
+        "email": "administrator@mail.com",
+        "phone": "000-000-0000",
+        "date_joined": "2020-01-01",
+        "active": True
+    },
+    "administrators": ["administrator"],
+    "wiki_folder": "~/loris/wiki",
+    "autoscript_folder": "~/loris/autoscripts",
+    "external_wiki": "#",
+    "ssh_address": None,
+    "ssh_username": "administrator",
+    "ssh_pkey": "~/.ssh/id_rsa",
+    "slack": []
     # tables skipped to check for permission
-)
+}
 AUTOSCRIPT_CONFIG = 'config.json'
 DOCKER_CONFIG = 'docker_config.json'
 GLOBAL_CONFIG = os.path.join(os.path.dirname(__file__), 'global_config.json')
@@ -90,9 +130,11 @@ class Config(dict):
                 config = json.load(f)
             with open(GLOBAL_CONFIG, 'w') as f:
                 json.dump(config, f)
-        else:
+        elif os.path.exists(GLOBAL_CONFIG):
             with open(GLOBAL_CONFIG, 'r') as f:
                 config = json.load(f)
+        else:
+            config = {}
 
         config = {**defaults, **config}
         config = cls(config)
