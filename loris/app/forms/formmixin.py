@@ -5,6 +5,7 @@ import os
 import numpy as np
 import json
 import re
+import warnings
 
 from wtforms import FieldList, FormField, BooleanField, StringField, \
     TextAreaField, SelectField
@@ -448,6 +449,13 @@ class FormMixin:
         readonly : iterable
             field ids that are readonly.
         """
+        if not isinstance(formatted_dict, dict):
+            warnings.warn(
+                "Formatted dictionary is not of type `dict`, "
+                f"but of type `{type(formatted_dict)}`"
+            )
+            return self
+
         for field in self:
             key = field.short_name
 
