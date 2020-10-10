@@ -20,7 +20,7 @@ with open(os.path.join(path, 'requirements.txt')) as f:
 
 setup(
     name='loris',
-    version='0.0.1-dev.1',
+    version='0.0.2',
     description='Loris',
     long_description=long_description,
     author='Matthias Christenson',
