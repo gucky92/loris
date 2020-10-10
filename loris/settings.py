@@ -54,8 +54,8 @@ defaults = {
     "import_schema_module": {},
     "tables_skip_permission": ['`subjects`.`fly_stock`'],
     "filestores": {
-        "attachstore": "~/attachstore",
-        "datastore": "~/datastore"
+        "attachstore": None,
+        "datastore": None
     },
     "database.host": "127.0.0.1",
     "database.port": 3306,
@@ -272,6 +272,10 @@ class Config(dict):
             dj.config['stores'] = {}
 
         for filestore_name, filestore in self['filestores'].items():
+            if filestore is None:
+                filestore = input(
+                    f"What is the directory for your `{filestore_name}`? "
+                )
             filestore = os.path.expanduser(filestore)
             if not os.path.exists(filestore):
                 os.makedirs(filestore)

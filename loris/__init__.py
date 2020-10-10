@@ -1,6 +1,10 @@
 """
 """
 
+__author__ = """gucky92"""
+__email__ = 'gucky@gucky.eu'
+__version__ = '0.0.1'
+
 import os
 
 from loris.settings import Config
@@ -33,7 +37,7 @@ class DataBase:
         ):
             return self.config['schemata'][name]
         else:
-            raise AttributeError
+            raise AttributeError(f"No database schema of name `{name}`.")
 
 
 db = DataBase(config)
