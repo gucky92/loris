@@ -57,8 +57,8 @@ defaults = {
         "attachstore": None,
         "datastore": None
     },
-    "database.host": "127.0.0.1",
-    "database.port": 3306,
+    "database.host": None,
+    "database.port": None,
     "connection.charset": "utf8",
     "enable_python_native_blobs": True,
     "enable_python_pickle_blobs": True,
@@ -257,6 +257,27 @@ class Config(dict):
         """
         # self.datajoint_configuration()
         self.connect_ssh()
+        # database host
+        if self['database.host'] is None:
+            host = input(
+                "What is the host address for your MySQL "
+                "instance (defaults to `127.0.0.1`)? "
+            )
+            if not host:
+                host = '127.0.0.1'
+            self['database.host'] = host
+        # database port
+        if self['database.port'] is None:
+            port = input(
+                "What is the port for your MySQL "
+                "instance (defaults to `3306`)? "
+            )
+            if not port:
+                port = 3306
+            else:
+                port = int(port)
+            self['database.port'] = port
+
         if self['database.host'] == 'mysql' and not (args or kwargs):
             try:
                 self['connection'] = dj.conn(*args, **kwargs)
@@ -274,8 +295,12 @@ class Config(dict):
         for filestore_name, filestore in self['filestores'].items():
             if filestore is None:
                 filestore = input(
-                    f"What is the directory for your `{filestore_name}`? "
+                    f"What is the directory for your `{filestore_name}` "
+                    f"(defaults to `~/loris/{filestore_name}`)? "
                 )
+                if not filestore:
+                    filestore = "~/loris/{filestore_name}"
+                self['filestores'][filestore_name] = filestore
             filestore = os.path.expanduser(filestore)
             if not os.path.exists(filestore):
                 os.makedirs(filestore)
