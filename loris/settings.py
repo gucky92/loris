@@ -97,6 +97,8 @@ defaults = {
 }
 AUTOSCRIPT_CONFIG = 'config.json'
 DOCKER_CONFIG = 'docker_config.json'
+USER_FILENAME = '._loris_config.json'
+USER_CONFIG = os.path.join(os.path.expanduser('~'), USER_FILENAME)
 GLOBAL_CONFIG = os.path.join(os.path.dirname(__file__), 'global_config.json')
 EXPANDUSER_FIELDS = (
     'tmp_folder',
@@ -116,8 +118,11 @@ class Config(dict):
         """
 
         if config_file is None:
-            root_dir = os.path.split(os.path.split(__file__)[0])[0]
-            config_file = 'loris_config.json'
+            config_file = USER_CONFIG
+
+            if not os.path.exists(config_file):
+                root_dir = os.path.split(os.path.split(__file__)[0])[0]
+                config_file = 'loris_config.json'
 
             if not os.path.exists(config_file):
                 config_file = os.path.join(root_dir, 'config.json')
@@ -128,7 +133,7 @@ class Config(dict):
         if os.path.exists(config_file):
             with open(config_file, 'r') as f:
                 config = json.load(f)
-            with open(GLOBAL_CONFIG, 'w') as f:
+            with open(USER_CONFIG, 'w') as f:
                 json.dump(config, f)
         elif os.path.exists(GLOBAL_CONFIG):
             with open(GLOBAL_CONFIG, 'r') as f:
