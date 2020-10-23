@@ -32,7 +32,6 @@ class DataBase:
 
         if (
             ('config' in vars(self))
-            and ('schemata' in self.config)
             and (name in self.config['schemata'])
         ):
             return self.config['schemata'][name]
