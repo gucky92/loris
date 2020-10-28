@@ -32,11 +32,15 @@ class MySQL(object):
         config.close()
         print('closed connection')
 
-        app.teardown_appcontext(self.teardown)
-        app.before_request(self.connect)
+        if hasattr(app, 'teardown_appcontext'):
+            app.teardown_appcontext(self.teardown)
+
+        if hasattr(app, 'before_request'):
+            app.before_request(self.connect)
 
     def connect(self):
         print('opening')
+        # TODO
         # if current_user.is_authenticated:
         #     connection = config.conn(
         #         user=current_user.user_name,

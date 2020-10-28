@@ -26,14 +26,15 @@ app.secret_key = config['secret_key']
 app.config['include_fly'] = config['include_fly']
 app.config['external_wiki'] = config['external_wiki']
 
-login_manager = LoginManager(app)
 mysql = MySQL(app)
+login_manager = LoginManager(app)
 
 # Test of dash app
-dash_app = Dash(__name__, server=app, url_base_pathname='/dashapp/')
-dash_app.layout = html.Div(
-    children=[html.H1(children='Dash App')]
-)
+# TODO
+# dash_app = Dash(__name__, server=app, url_base_pathname='/dashapp/')
+# dash_app.layout = html.Div(
+#     children=[html.H1(children='Dash App')]
+# )
 
 
 @login_manager.user_loader

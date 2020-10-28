@@ -4,6 +4,7 @@
 from flask_login import UserMixin
 import datajoint as dj
 import warnings
+import pymysql
 
 from loris import config
 from loris.errors import LorisError
@@ -12,13 +13,14 @@ from loris.errors import LorisError
 class User(UserMixin):
 
     def __init__(self, user_name):
+        print(config['connection'])
         self.table = config.user_table
 
         # skip mysql error
         try:
             if not len(self.table()):
                 config.create_administrator()
-        except Exception:
+        except pymysql.err.InterfaceError:
             warnings.warn('not creating administrator')
 
         self.user_name = user_name
