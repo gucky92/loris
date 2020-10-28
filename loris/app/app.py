@@ -3,8 +3,8 @@
 
 from flask import Flask, session, request, redirect
 from flask_login import LoginManager
-from dash import Dash
-import dash_html_components as html
+# from dash import Dash
+# import dash_html_components as html
 
 from loris import config
 from loris.app.login import User

@@ -27,9 +27,6 @@ def login():
     if current_user.is_authenticated:
         return redirect(url_for('home'))
 
-    print('login window')
-    print(config['connection'])
-
     form = LoginForm()
 
     if form.validate_on_submit():
