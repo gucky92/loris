@@ -3,6 +3,7 @@
 
 from flask_login import UserMixin
 import datajoint as dj
+import warnings
 
 from loris import config
 from loris.errors import LorisError
@@ -13,8 +14,11 @@ class User(UserMixin):
     def __init__(self, user_name):
         self.table = config.user_table
 
-        if not len(self.table()):
-            config.create_administrator()
+        try:
+            if not len(self.table()):
+                config.create_administrator()
+        except Exception:
+            warnings.warn('not creating administrator')
 
         self.user_name = user_name
 
