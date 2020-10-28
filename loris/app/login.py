@@ -14,6 +14,7 @@ class User(UserMixin):
     def __init__(self, user_name):
         self.table = config.user_table
 
+        # skip mysql error
         try:
             if not len(self.table()):
                 config.create_administrator()
