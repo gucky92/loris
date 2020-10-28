@@ -32,11 +32,8 @@ class MySQL(object):
         config.close()
         print('closed connection')
 
-        if hasattr(app, 'teardown_appcontext'):
-            app.teardown_appcontext(self.teardown)
-
-        if hasattr(app, 'before_request'):
-            app.before_request(self.connect)
+        app.teardown_appcontext(self.teardown)
+        app.before_request(self.connect)
 
     def connect(self):
         print('opening')
