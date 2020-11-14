@@ -425,6 +425,26 @@ class FolderPath(dj.AttributeAdapter):
         return value
 
 
+class DreyeJSON(dj.AttributeAdapter):
+    """
+    Use dreye (de)serializer
+    """
+
+    attribute_type = 'blob@datastore'
+
+    def put(self, obj):
+
+        if obj is None:
+            return
+
+        from dreye.io.serialization import dump_json
+        return dump_json(obj)
+
+    def get(self, value):
+        from dreye.io.serialization import load_json
+        return load_json(obj)
+
+
 chr = Chromosome()
 link = Link()
 flyidentifier = FlyIdentifier()
@@ -432,6 +452,7 @@ crossschema = CrossSchema()
 truebool = TrueBool()
 tarfolder = TarFolder()
 liststring = ListString()
+dreyejson = DreyeJSON()
 tags = ListString(
     lambda x: isinstance(x, str),
     'Elements of list must be strings.'
@@ -480,5 +501,6 @@ custom_attributes_dict = {
     'pickledata': pickledata,
     'pickleblob': pickleblob,
     'folderpath': folderpath,
-    'stockid': stockid
+    'stockid': stockid,
+    'dreyejson': dreyejson
 }
