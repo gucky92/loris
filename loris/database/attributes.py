@@ -442,7 +442,7 @@ class DreyeJSON(dj.AttributeAdapter):
 
     def get(self, value):
         from dreye.io.serialization import load_json
-        return load_json(obj)
+        return load_json(value)
 
 
 chr = Chromosome()
