@@ -609,6 +609,7 @@ class DynamicField:
                 (str(ele), str(ele))
                 for ele in self.foreign_data
             ]
+        choices = sorted(choices)
         if self.nullable:
             choices = [('NULL', 'NULL')] + choices
         if self.foreign_is_manuallookup and not self.ignore_foreign_fields:

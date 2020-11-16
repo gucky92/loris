@@ -220,6 +220,7 @@ class AutoscriptedField:
                 else (str(ele), str(ele[0]))
                 for ele in choices
             ]
+            choices = sorted(choices)
 
             if default is None and not required:
                 choices = [('NULL', 'NULL')] + choices
