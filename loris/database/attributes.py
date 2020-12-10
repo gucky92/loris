@@ -458,7 +458,7 @@ tags = ListString(
     'Elements of list must be strings.'
 )
 numberlist = ListString(
-    lambda x: isinstance(x, (float, int)),
+    lambda x: isinstance(x, Number),
     'Elements of list must be strings.'
 )
 listintervals = ListString(
