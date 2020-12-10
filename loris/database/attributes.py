@@ -475,6 +475,10 @@ dicttags = DictString(
     lambda x: isinstance(x, str),
     'Values of dict must be strings'
 )
+numberdict = DictString(
+    lambda x: isinstance(x, Number),
+    'Values of dict must be strings'
+)
 attachprocess = AttachProcess()
 attachplaceholder = AttachPlaceholder()
 lookupname = LookupName()
@@ -507,5 +511,6 @@ custom_attributes_dict = {
     'folderpath': folderpath,
     'stockid': stockid,
     'dreyejson': dreyejson,
-    'numberlist': numberlist
+    'numberlist': numberlist,
+    'numberdict': numberdict
 }
