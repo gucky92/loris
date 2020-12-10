@@ -457,6 +457,10 @@ tags = ListString(
     lambda x: isinstance(x, str),
     'Elements of list must be strings.'
 )
+numberlist = ListString(
+    lambda x: isinstance(x, (float, int)),
+    'Elements of list must be strings.'
+)
 listintervals = ListString(
     lambda x: (
         (isinstance(x, (list, tuple)))
@@ -502,5 +506,6 @@ custom_attributes_dict = {
     'pickleblob': pickleblob,
     'folderpath': folderpath,
     'stockid': stockid,
-    'dreyejson': dreyejson
+    'dreyejson': dreyejson,
+    'numberlist': numberlist
 }
