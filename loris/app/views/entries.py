@@ -61,13 +61,21 @@ def delete(schema, table, subtable):
             f' allowed to delete entry: {_id}'
         ), 'error')
         return redirect(redirect_url)
-    message, commit_transaction, conn, already_in_transaction = \
-        to_delete._delete(force=True)
+
+    conn = to_delete.connection
+    if conn.in_transaction:
+        flash((
+            f"Entry `{_id}` is currently within a transaction! Cannot delete"
+        ), 'error')
+        return redirect(redirect_url)
+
+    conn.start_transaction()
+    count, message = to_delete._delete_cascade(return_message=True)
 
     if request.method == 'POST':
         submit = request.form.get('submit', None)
 
-        if submit == 'Delete' and commit_transaction:
+        if submit == 'Delete' and count:
             if table_name in config.slack_tables:
                 if 'delete' in config.slack_tables[table_name].get(
                     'upon', 'insert'
@@ -107,7 +115,7 @@ def delete(schema, table, subtable):
     # always cancel transaction
     conn.cancel_transaction()
 
-    if commit_transaction:
+    if count:
         return render_template(
             'pages/delete.html',
             table_name=table_name,
@@ -121,7 +129,7 @@ def delete(schema, table, subtable):
             )
         )
     else:
-        flash(message, 'error')
+        flash("Nothing to delete", 'error')
         return redirect(url_for(
             'table',
             schema=schema,
