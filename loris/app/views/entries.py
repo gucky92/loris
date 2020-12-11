@@ -70,7 +70,14 @@ def delete(schema, table, subtable):
         return redirect(redirect_url)
 
     conn.start_transaction()
-    count, message = to_delete._delete_cascade(return_message=True)
+    try:
+        count, message = to_delete._delete_cascade(return_message=True)
+    except Exception as e:
+        conn.cancel_transaction()
+        flash((
+            f"DataJointError: {e}"
+        ), 'error')
+        return redirect(redirect_url)
 
     if request.method == 'POST':
         submit = request.form.get('submit', None)
@@ -130,12 +137,7 @@ def delete(schema, table, subtable):
         )
     else:
         flash("Nothing to delete", 'error')
-        return redirect(url_for(
-            'table',
-            schema=schema,
-            table=table,
-            subtable=subtable
-        ))
+        return redirect(redirect_url)
 
 
 @app.route('/table/<schema>/<table>',
