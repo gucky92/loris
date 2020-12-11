@@ -99,19 +99,11 @@ def delete(schema, table, subtable):
             dynamicform.reset()
             # redired to table
             flash(f'Entry deleted: {_id}', 'warning')
-            if redirect_url is None:
-                return redirect(url_for(
-                    'table',
-                    schema=schema,
-                    table=table,
-                    subtable=subtable
-                ))
-            else:
-                return redirect(redirect_url)
+            return redirect(redirect_url)
 
         elif submit == 'Cancel':
             conn.cancel_transaction()
-            flash(f'Entry not deleted')
+            flash('Entry not deleted')
             return redirect(url_for(
                 'table',
                 schema=schema,
