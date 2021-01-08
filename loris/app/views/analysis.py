@@ -26,6 +26,8 @@ from loris.app.login import User
 from loris.app.subprocess import Run
 from loris.database.users import grantuser, change_password
 
+# TODO
+
 
 @app.route('/setup/<schema>/<table>', methods=['GET', 'POST'])
 @login_required
@@ -37,13 +39,12 @@ def setup(schema, table):
     url = url_for(
         'setup', schema=schema, table=table
     )
-    # overwrite_url = url_for(
-    #     'setup', schema=schema, table=table)
-    delete_url = url_for(
-        'delete', schema=schema, table=table
-    )
 
     table_class = getattr(config['schemata'][schema], table).settings_table
+
+    delete_url = url_for(
+        'delete', schema=schema, table=table_class.name
+    )
 
     form = dynamic_settingstableform(table_class)()
 
@@ -70,11 +71,8 @@ def setup(schema, table):
     # json table
     data = get_jsontable(
         df, table_class.primary_key,
-        # overwrite_url=overwrite_url,
         delete_url=delete_url
     )
-
-    # TODO populate form
 
     if request.method == 'POST':
         submit = request.form.get('submit', None)
@@ -102,8 +100,6 @@ def setup(schema, table):
                             'setup',
                             table=table,
                             schema=schema,
-                            # overwrite='True',
-                            # _id=str(_id)
                         )
                     )
 
@@ -156,6 +152,7 @@ def run(schema, table):
 
             kwargs = json.dumps(formatted_dict)
 
+            # TODO currently hard-coded
             filepath = os.path.join(
                 os.path.dirname(os.path.dirname(__file__)),
                 "analysis",

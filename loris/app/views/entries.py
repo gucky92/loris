@@ -25,7 +25,6 @@ from loris.database.users import grantuser, change_password
 from loris.slack import execute_slack_message
 
 
-
 @app.route('/delete/<schema>/<table>',
            defaults={'subtable': None}, methods=['GET', 'POST'])
 @app.route('/delete/<schema>/<table>/<subtable>', methods=['GET', 'POST'])
@@ -154,6 +153,7 @@ def table(schema, table, subtable):
     ):
         return redirect(url_for('assigngroup'))
 
+    # TODO this should be handled in SQL GRANT permissions
     if (schema, table) == ('subjects', 'FlyStock'):
         override_permissions = True
     else:

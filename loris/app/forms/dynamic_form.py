@@ -22,6 +22,13 @@ from loris.app.utils import draw_helper, get_jsontable
 from loris.utils import save_join
 
 
+def _get_name(table):
+    if hasattr(table, "name"):
+        return table.name
+    else:
+        return table.__name__
+
+
 class DynamicForm:
     """creates forms from datajoint table class
 
@@ -169,7 +176,7 @@ class DynamicForm:
                 formtype=NoCsrfForm
             )
             dynamicform.restriction = self.restriction
-            part_fields[part_table.name] = dynamicform
+            part_fields[_get_name(part_table)] = dynamicform
 
         return part_fields
 
@@ -260,7 +267,7 @@ class DynamicForm:
         return get_jsontable(
             table, primary_key,
             edit_url=edit_url, delete_url=delete_url,
-            overwrite_url=overwrite_url, name=self.table.name,
+            overwrite_url=overwrite_url, name=_get_name(self.table),
             load_url=load_url
         )
 
@@ -481,16 +488,16 @@ class DynamicForm:
                 part_table & restriction
             ).proj(*part_table.heading.non_blobs).fetch(as_dict=True)
             # proj non_blobs?
-            populate_dict[part_table.name] = []
+            populate_dict[_get_name(part_table)] = []
             for part_formatted_dict in part_formatted_list_dict:
 
                 part_populate_dict = self.part_fields[
-                    part_table.name
+                    _get_name(part_table)
                 ]._prepare_populate_dict(
                     readonly, part_formatted_dict, is_edit=is_edit
                 )
 
-                populate_dict[part_table.name].append(part_populate_dict)
+                populate_dict[_get_name(part_table)].append(part_populate_dict)
 
         # update with kwargs
         populate_dict.update(kwargs)

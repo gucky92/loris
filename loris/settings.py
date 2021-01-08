@@ -51,7 +51,7 @@ defaults = {
     "max_cpu": None,
     "init_database": False,
     "include_fly": True,
-    "import_schema_module": {},
+    "import_schema_module": {},  # schema_name : file_location
     "tables_skip_permission": ['`subjects`.`fly_stock`'],
     "filestores": {
         "attachstore": None,
@@ -354,12 +354,13 @@ class Config(dict):
         schemata = {}
 
         # direct loading if possible
+        # TODO (also in app init)
         if self['init_database']:
             from loris.database.schema import (
                 equipment, experimenters, core, misc
             )
 
-            schemata['equipment'] = equipment
+            schemata['equipment'] = equipment  # move out
             schemata['experimenters'] = experimenters
             schemata['core'] = core
 
@@ -368,9 +369,9 @@ class Config(dict):
                     anatomy, imaging, recordings, subjects
                 )
 
-                schemata['anatomy'] = anatomy
-                schemata['imaging'] = imaging
-                schemata['recordings'] = recordings
+                schemata['anatomy'] = anatomy  # move out
+                schemata['imaging'] = imaging  # move out
+                schemata['recordings'] = recordings  # move out
                 schemata['subjects'] = subjects
 
         for schema, module_path in self["import_schema_module"]:

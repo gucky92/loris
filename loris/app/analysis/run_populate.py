@@ -40,4 +40,6 @@ if __name__ == '__main__':
         args.table
     )
 
-    table_class.populate(**kwargs)
+    restriction = kwargs.pop('restriction')
+
+    table_class.populate(restriction, **kwargs)
