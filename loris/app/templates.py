@@ -12,6 +12,7 @@ from loris.app.forms.dynamic_form import DynamicForm
 from loris.app.utils import user_has_permission, get_jsontable
 from loris.utils import save_join
 from loris.slack import execute_slack_message
+from loris.io import string_dump, string_load
 
 
 def joined_table_template(
@@ -70,7 +71,7 @@ def form_template(
     # showing
     enter_show = ['', 'false']
     # get id if it exists (will be restriction)
-    _id = literal_eval(request.args.get('_id', "None"))
+    _id = string_load(request.args.get('_id', string_dump(None)))
     # get table and create dynamic form
     table_class = getattr(config['schemata'][schema], table)
     # get table name

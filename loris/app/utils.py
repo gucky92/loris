@@ -17,6 +17,7 @@ from flask import render_template, request, flash, url_for, redirect
 from loris import config, conn
 from loris.errors import LorisError
 from loris.utils import is_manuallookup
+from loris.io import string_dump, string_load
 
 
 def datareader(value):
@@ -139,12 +140,12 @@ def get_jsontable(
         pass
     elif len(data) == 0:
         data = pd.DataFrame(
-            columns=['_id']+list(data.columns)
+            columns=['_id'] + list(data.columns)
         )
     else:
         _id = pd.Series(
             data[primary_key].to_dict('records')
-        )
+        ).apply(string_dump)
         _id.name = '_id'
         data = pd.concat([_id, data], axis=1)
 

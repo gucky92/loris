@@ -8,7 +8,6 @@ from functools import wraps
 from flask_login import current_user, login_user, login_required, logout_user
 import datajoint as dj
 import pandas as pd
-from ast import literal_eval
 
 from loris import config
 from loris.app.app import app
@@ -23,6 +22,7 @@ from loris.utils import save_join
 from loris.app.login import User
 from loris.database.users import grantuser, change_password
 from loris.slack import execute_slack_message
+from loris.io import string_dump, string_load
 
 
 @app.route('/delete/<schema>/<table>',
@@ -38,7 +38,7 @@ def delete(schema, table, subtable):
         )
     )
     # get id if it exists (will be restriction)
-    _id = literal_eval(request.args.get('_id', "None"))
+    _id = string_load(request.args.get('_id', string_dump(None)))
     if (_id == 'None') or (_id is None):
         return redirect(redirect_url)
 

@@ -5,7 +5,6 @@ import os
 from flask import render_template, request, flash, url_for, redirect, \
     send_from_directory, session
 from functools import wraps
-from ast import literal_eval
 from flask_login import current_user, login_user, login_required, logout_user
 import datajoint as dj
 import pandas as pd
@@ -22,6 +21,7 @@ from loris.app.utils import draw_helper, get_jsontable, user_has_permission
 from loris.utils import save_join
 from loris.app.login import User
 from loris.database.users import grantuser, change_password
+from loris.io import string_load, string_dump
 
 
 @app.route('/genotype', methods=['GET', 'POST'])
@@ -78,7 +78,7 @@ def cross():
 @login_required
 def crossload():
 
-    _id = literal_eval(request.args.get('_id', "None"))
+    _id = string_load(request.args.get('_id', string_dump(None)))
     if _id is None or not isinstance(_id, dict) or 'cross_id' not in _id:
         flash('No cross_id was given for loading FlyCross', 'error')
         return redirect(url_for('cross'))

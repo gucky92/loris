@@ -9,6 +9,7 @@ import gzip
 import lzma
 import bz2
 import os
+import codecs
 
 from loris import ignore
 from loris.errors import LorisSerializationError
@@ -22,6 +23,14 @@ _DEFAULT_EXTENSION_MAP = {
     "lzma": "lzma",
     "pkl": "pickle"
 }
+
+
+def string_dump(obj):
+    return codecs.encode(pickle.dumps(obj), "base64").decode()
+
+
+def string_load(pickled):
+    pickle.loads(codecs.decode(pickled.encode(), 'base64'))
 
 
 def infer_compression_from_filename(filename: str) -> str:
