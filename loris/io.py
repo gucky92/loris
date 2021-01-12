@@ -10,6 +10,8 @@ import lzma
 import bz2
 import os
 import codecs
+import json
+from uuid import UUID
 
 from loris import ignore
 from loris.errors import LorisSerializationError
@@ -25,12 +27,22 @@ _DEFAULT_EXTENSION_MAP = {
 }
 
 
+class UUIDEncoder(json.JSONEncoder):
+    def default(self, obj):
+        if isinstance(obj, UUID):
+            # if the obj is uuid, we simply return the value of uuid
+            return obj.hex
+        return json.JSONEncoder.default(self, obj)
+
+
 def string_dump(obj):
+    # return json.dumps(obj, cls=UUIDEncoder)
     return codecs.encode(pickle.dumps(obj), "base64").decode()
 
 
-def string_load(pickled):
-    pickle.loads(codecs.decode(pickled.encode(), 'base64'))
+def string_load(string):
+    # return json.loads(string, )
+    return pickle.loads(codecs.decode(string.encode(), 'base64'))
 
 
 def infer_compression_from_filename(filename: str) -> str:
