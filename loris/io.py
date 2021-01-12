@@ -42,7 +42,10 @@ def string_dump(obj):
 
 def string_load(string):
     # return json.loads(string, )
-    return pickle.loads(codecs.decode(string.encode(), 'base64'))
+    return pickle.loads(
+        # empty spaces presumed to be pluses
+        codecs.decode(string.replace(" ", "+").encode(), 'base64')
+    )
 
 
 def infer_compression_from_filename(filename: str) -> str:
