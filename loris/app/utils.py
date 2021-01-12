@@ -79,15 +79,9 @@ def user_has_permission(table, user, skip_tables=None):
             user_only = table & {config['user_name']: user}
             return len(user_only) == len(table)
         else:
-            for parent_name, parent_info in table.parents().items():
+            for parent_name, parent_info in table.parents(foreign_key_info=True):
                 if parent_name in skip_tables:
                     continue
-                if parent_info['aliased']:
-                    grandparents = table.connection.dependencies.parents(
-                        parent_name
-                    )
-                    # only a single one should exist if aliased
-                    parent_name = list(grandparents.keys())[0]
 
                 # get parent table
                 parent_table = config.get_table(parent_name)
