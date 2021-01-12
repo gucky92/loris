@@ -41,5 +41,7 @@ if __name__ == '__main__':
     )
 
     restriction = kwargs.pop('restriction')
+    print("restriction")
+    print(restriction)
 
     table_class.populate(restriction, **kwargs)
