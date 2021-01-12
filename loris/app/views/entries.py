@@ -39,7 +39,8 @@ def delete(schema, table, subtable):
     )
     # get id if it exists (will be restriction)
     _id = string_load(request.args.get('_id', string_dump(None)))
-    if (_id == 'None') or (_id is None):
+    print(_id)
+    if _id is None:
         return redirect(redirect_url)
 
     # get table and create dynamic form
