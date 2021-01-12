@@ -38,6 +38,7 @@ def delete(schema, table, subtable):
         )
     )
     # get id if it exists (will be restriction)
+    print(request.args.get('_id', string_dump(None))
     _id = string_load(request.args.get('_id', string_dump(None)))
     if _id is None:
         return redirect(redirect_url)
