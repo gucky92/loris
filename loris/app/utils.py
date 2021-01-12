@@ -99,15 +99,9 @@ def user_has_permission(table, user, skip_tables=None):
                     return False
 
     # checks if children have a parent table that is dependent on user table
-    for child_name, child_info in table.children_dict().items():
+    for child_name, child_info in table.children(foreign_key_info=True):
         if child_name in skip_tables:
             continue
-        if child_info['aliased']:
-            grandchildren = table.connection.dependencies.children(
-                child_name
-            )
-            # only a single one should exist if aliased
-            child_name = list(grandchildren.keys())[0]
 
         # get child table
         child_table = config.get_table(child_name)
