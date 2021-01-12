@@ -104,7 +104,7 @@ def user_has_permission(table, user, skip_tables=None):
                     return False
 
     # checks if children have a parent table that is dependent on user table
-    for child_name, child_info in table.children().items():
+    for child_name, child_info in table.children_dict().items():
         if child_name in skip_tables:
             continue
         if child_info['aliased']:
