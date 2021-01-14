@@ -1,7 +1,7 @@
-"""Run app for debugging
-"""
+#!/usr/bin/env python
 
 from loris import conn
+# implement argparse
 
 
 if __name__ == "__main__":
@@ -12,4 +12,6 @@ if __name__ == "__main__":
 
     app.run(
         port=1234, debug=False,
+        host='0.0.0.0',
+        ssl_context='adhoc'
     )
