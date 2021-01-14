@@ -30,7 +30,7 @@ class PostInstall(install):
 
 
 setup(
-    name='loris',
+    name='lorisapp',
     version='0.0.7',
     description='Loris',
     long_description=long_description,
