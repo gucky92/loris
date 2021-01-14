@@ -25,7 +25,7 @@ setup(
     long_description=long_description,
     author='Matthias Christenson',
     author_email='gucky@gucky.eu',
-    install_requires=requirements[:-1]+['datajoint @ ' + requirements[-1]],
+    install_requires=requirements[:-1] + ['datajoint @ ' + requirements[-1]],
     keywords='database application',
     packages=find_packages(exclude=["docs", "images", "tests"]),
     include_package_data=True,
