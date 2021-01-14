@@ -41,5 +41,7 @@ setup(
     packages=find_packages(exclude=["docs", "images", "tests"]),
     include_package_data=True,
     scripts=['bin/lorisapp'],
-    cmdclass={'install': PostInstall}
+    cmdclass={
+        'install': PostInstall
+    }
 )
