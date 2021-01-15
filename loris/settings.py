@@ -27,7 +27,7 @@ from loris.io import read_pickle, write_pickle
 defaults = {
     "textarea_startlength": 512,
     # UPLOAD EXTENSIONS
-    "extensions": ['csv', 'npy', 'json', 'pkl'],
+    "extensions": ['csv', 'npy', 'json', 'pkl', 'npz'],
     "attach_extensions": (
         ['csv', 'npy', 'json', 'pkl', 'npz'] + [
             'tiff', 'png', 'jpeg', 'mpg', 'hdf', 'hdf5', 'tar', 'zip',
@@ -38,6 +38,7 @@ defaults = {
             'irradcal', 'cal'  # calibration files
         ]
     ),
+    "additional_extensions": [],  # TODO
     # foreign key select field limit
     "fk_dropdown_limit": 200,
     "user_schema": "experimenters",

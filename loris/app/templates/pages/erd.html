@@ -7,10 +7,11 @@
     <h4>Relations</h4>
     Click on a table to expand it.
     <div class="post-tabs" style="overflow:auto">
-        <object data="{{ url_for('tmpfile', filename=filename) }}"
+        <img src="{{ url_for('tmpfile', filename=filename) }}" onload="SVGInject(this)" />
+        <!-- <object data="{{ url_for('tmpfile', filename=filename) }}"
                 type="image/svg+xml"
                 class="Svg" target="_top">
-        </object>
+        </object> -->
     </div>
 </div>
 
