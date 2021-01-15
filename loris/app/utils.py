@@ -185,7 +185,7 @@ def draw_helper(obj=None, type='table', only_essentials=False):
     # rankdir TB?
     # setup of graphviz
     graph_attr = {
-        'size': '12, 12', 'rankdir': 'LR', 'splines': 'ortho',
+        'rankdir': 'LR', 'splines': 'ortho',
         'fontname': 'helvetica'
     }
     node_attr = {
