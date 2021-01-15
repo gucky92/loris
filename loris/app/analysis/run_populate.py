@@ -48,7 +48,10 @@ if __name__ == '__main__':
     )
 
     restriction = kwargs.pop('restriction')
-    print("restriction")
+    settings_name = kwargs.pop('settings_name')
+    print("settings_name:")
+    print(settings_name)
+    print("restriction:")
     print(restriction)
 
-    table_class.populate(restriction, **kwargs)
+    table_class.populate(settings_name, restriction, **kwargs)
