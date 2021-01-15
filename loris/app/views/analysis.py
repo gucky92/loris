@@ -161,6 +161,7 @@ def run(schema, table):
 
             command = [
                 "python",
+                "-u",
                 filepath,
                 "--schema",
                 schema,
