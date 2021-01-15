@@ -168,7 +168,11 @@ def run(schema, table):
                 "--table",
                 table,
                 "--kwargs",
-                kwargs
+                kwargs,
+                "--user",
+                dj.config['database.user'],
+                "--password",
+                dj.config['database.password']
             ]
 
             config['_autopopulate'][table_name] = process

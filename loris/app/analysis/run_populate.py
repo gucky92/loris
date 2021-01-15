@@ -17,6 +17,12 @@ if __name__ == '__main__':
     parser.add_argument(
         "--kwargs", help="keyword arguments to pass to populate", type=str
     )
+    parser.add_argument(
+        "--user", help="username for sql database", type=str
+    )
+    parser.add_argument(
+        "--password", help="password for sql database", type=str
+    )
 
     args = parser.parse_args()
     # TODO connect as user?
@@ -34,7 +40,7 @@ if __name__ == '__main__':
         sys.path.append(filepath)
         from loris import config, conn
 
-    conn()
+    conn(user=args.user, password=args.password)
 
     table_class = getattr(
         config['schemata'][args.schema],
