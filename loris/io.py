@@ -45,7 +45,7 @@ def string_dump(obj):
 
 def string_load(string):
     return rapidjson.loads(
-        string,
+        string.replace("'", '"'),
         uuid_mode=rapidjson.UM_CANONICAL,
         datetime_mode=rapidjson.DM_ISO8601
     )
