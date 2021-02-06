@@ -8,6 +8,7 @@ import json
 
 
 if __name__ == '__main__':
+    print('starting to populate')
     parser = argparse.ArgumentParser()
     parser.add_argument(
         "--schema", help="name of schema", type=str)
@@ -15,6 +16,12 @@ if __name__ == '__main__':
         "--table", help="name of table", type=str)
     parser.add_argument(
         "--kwargs", help="keyword arguments to pass to populate", type=str
+    )
+    parser.add_argument(
+        "--user", help="username for sql database", type=str
+    )
+    parser.add_argument(
+        "--password", help="password for sql database", type=str
     )
 
     args = parser.parse_args()
@@ -33,11 +40,18 @@ if __name__ == '__main__':
         sys.path.append(filepath)
         from loris import config, conn
 
-    conn()
+    conn(user=args.user, password=args.password)
 
     table_class = getattr(
         config['schemata'][args.schema],
         args.table
     )
 
-    table_class.populate(**kwargs)
+    restriction = kwargs.pop('restriction')
+    settings_name = kwargs.pop('settings_name')
+    print("settings_name:")
+    print(settings_name)
+    print("restriction:")
+    print(restriction)
+
+    table_class.populate(settings_name, restriction, **kwargs)

@@ -8,7 +8,6 @@ from functools import wraps
 from flask_login import current_user, login_user, login_required, logout_user
 import datajoint as dj
 import pandas as pd
-from ast import literal_eval
 
 from loris import config
 from loris.app.app import app
@@ -23,7 +22,7 @@ from loris.utils import save_join
 from loris.app.login import User
 from loris.database.users import grantuser, change_password
 from loris.slack import execute_slack_message
-
+from loris.io import string_dump, string_load
 
 
 @app.route('/delete/<schema>/<table>',
@@ -39,8 +38,9 @@ def delete(schema, table, subtable):
         )
     )
     # get id if it exists (will be restriction)
-    _id = literal_eval(request.args.get('_id', "None"))
-    if (_id == 'None') or (_id is None):
+    print(request.args.get('_id', string_dump(None)))
+    _id = string_load(request.args.get('_id', string_dump(None)))
+    if _id is None:
         return redirect(redirect_url)
 
     # get table and create dynamic form
@@ -61,13 +61,28 @@ def delete(schema, table, subtable):
             f' allowed to delete entry: {_id}'
         ), 'error')
         return redirect(redirect_url)
-    message, commit_transaction, conn, already_in_transaction = \
-        to_delete._delete(force=True)
+
+    conn = to_delete.connection
+    if conn.in_transaction:
+        flash((
+            f"Entry `{_id}` is currently within a transaction! Cannot delete"
+        ), 'error')
+        return redirect(redirect_url)
+
+    conn.start_transaction()
+    try:
+        count, message = to_delete._delete_cascade(return_message=True)
+    except Exception as e:
+        conn.cancel_transaction()
+        flash((
+            f"DataJointError: {e}"
+        ), 'error')
+        return redirect(redirect_url)
 
     if request.method == 'POST':
         submit = request.form.get('submit', None)
 
-        if submit == 'Delete' and commit_transaction:
+        if submit == 'Delete' and count:
             if table_name in config.slack_tables:
                 if 'delete' in config.slack_tables[table_name].get(
                     'upon', 'insert'
@@ -84,19 +99,11 @@ def delete(schema, table, subtable):
             dynamicform.reset()
             # redired to table
             flash(f'Entry deleted: {_id}', 'warning')
-            if redirect_url is None:
-                return redirect(url_for(
-                    'table',
-                    schema=schema,
-                    table=table,
-                    subtable=subtable
-                ))
-            else:
-                return redirect(redirect_url)
+            return redirect(redirect_url)
 
         elif submit == 'Cancel':
             conn.cancel_transaction()
-            flash(f'Entry not deleted')
+            flash('Entry not deleted')
             return redirect(url_for(
                 'table',
                 schema=schema,
@@ -107,7 +114,7 @@ def delete(schema, table, subtable):
     # always cancel transaction
     conn.cancel_transaction()
 
-    if commit_transaction:
+    if count:
         return render_template(
             'pages/delete.html',
             table_name=table_name,
@@ -121,13 +128,8 @@ def delete(schema, table, subtable):
             )
         )
     else:
-        flash(message, 'error')
-        return redirect(url_for(
-            'table',
-            schema=schema,
-            table=table,
-            subtable=subtable
-        ))
+        flash("Nothing to delete", 'error')
+        return redirect(redirect_url)
 
 
 @app.route('/table/<schema>/<table>',
@@ -152,6 +154,7 @@ def table(schema, table, subtable):
     ):
         return redirect(url_for('assigngroup'))
 
+    # TODO this should be handled in SQL GRANT permissions
     if (schema, table) == ('subjects', 'FlyStock'):
         override_permissions = True
     else:

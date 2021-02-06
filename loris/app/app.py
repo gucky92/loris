@@ -1,10 +1,8 @@
 """
 """
 
-from flask import Flask, session, request, redirect
+from flask import Flask, request, redirect
 from flask_login import LoginManager
-# from dash import Dash
-# import dash_html_components as html
 
 from loris import config
 from loris.app.login import User
@@ -28,13 +26,6 @@ app.config['external_wiki'] = config['external_wiki']
 
 mysql = MySQL(app)
 login_manager = LoginManager(app)
-
-# Test of dash app
-# TODO
-# dash_app = Dash(__name__, server=app, url_base_pathname='/dashapp/')
-# dash_app.layout = html.Div(
-#     children=[html.H1(children='Dash App')]
-# )
 
 
 @login_manager.user_loader

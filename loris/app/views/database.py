@@ -10,7 +10,6 @@ from functools import wraps
 from flask_login import current_user, login_user, login_required, logout_user
 import datajoint as dj
 import pandas as pd
-from ast import literal_eval
 
 from loris import config
 from loris.app.app import app
@@ -24,6 +23,7 @@ from loris.app.utils import draw_helper, get_jsontable, user_has_permission
 from loris.utils import save_join
 from loris.app.login import User
 from loris.database.users import grantuser, change_password
+from loris.io import string_load, string_dump
 
 
 @app.route('/refresh')
@@ -142,7 +142,7 @@ def jobs(schema):
     jobs = config['schemata'][schema].schema.jobs
     # standard delete and edit urls
     delete_url = url_for('jobs', schema=schema)
-    _id = literal_eval(request.args.get('_id', "None"))
+    _id = string_load(request.args.get('_id', string_dump(None)))
 
     data = jobs.fetch(format='frame').reset_index()
     data = get_jsontable(

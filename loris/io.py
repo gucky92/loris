@@ -9,6 +9,9 @@ import gzip
 import lzma
 import bz2
 import os
+import json
+from uuid import UUID
+import rapidjson
 
 from loris import ignore
 from loris.errors import LorisSerializationError
@@ -22,6 +25,30 @@ _DEFAULT_EXTENSION_MAP = {
     "lzma": "lzma",
     "pkl": "pickle"
 }
+
+
+class UUIDEncoder(json.JSONEncoder):
+    def default(self, obj):
+        if isinstance(obj, UUID):
+            # if the obj is uuid, we simply return the value of uuid
+            return obj.hex
+        return json.JSONEncoder.default(self, obj)
+
+
+def string_dump(obj):
+    return rapidjson.dumps(
+        obj,
+        uuid_mode=rapidjson.UM_CANONICAL,
+        datetime_mode=rapidjson.DM_ISO8601
+    )
+
+
+def string_load(string):
+    return rapidjson.loads(
+        string.replace("'", '"'),
+        uuid_mode=rapidjson.UM_CANONICAL,
+        datetime_mode=rapidjson.DM_ISO8601
+    )
 
 
 def infer_compression_from_filename(filename: str) -> str:

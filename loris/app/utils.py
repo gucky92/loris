@@ -17,12 +17,13 @@ from flask import render_template, request, flash, url_for, redirect
 from loris import config, conn
 from loris.errors import LorisError
 from loris.utils import is_manuallookup
+from loris.io import string_dump, string_load
 
 
 def datareader(value):
     """data reader for supported files, otherwise just return the file
     """
-    if value.endswith('npy'):
+    if value.endswith('npy') or value.endswith('npz'):
         value = np.load(value)
     elif value.endswith('csv'):
         value = pd.read_csv(value).to_records(False)
@@ -78,15 +79,9 @@ def user_has_permission(table, user, skip_tables=None):
             user_only = table & {config['user_name']: user}
             return len(user_only) == len(table)
         else:
-            for parent_name, parent_info in table.parents().items():
+            for parent_name, parent_info in table.parents(foreign_key_info=True):
                 if parent_name in skip_tables:
                     continue
-                if parent_info['aliased']:
-                    grandparents = table.connection.dependencies.parents(
-                        parent_name
-                    )
-                    # only a single one should exist if aliased
-                    parent_name = list(grandparents.keys())[0]
 
                 # get parent table
                 parent_table = config.get_table(parent_name)
@@ -104,15 +99,9 @@ def user_has_permission(table, user, skip_tables=None):
                     return False
 
     # checks if children have a parent table that is dependent on user table
-    for child_name, child_info in table.children().items():
+    for child_name, child_info in table.children(foreign_key_info=True):
         if child_name in skip_tables:
             continue
-        if child_info['aliased']:
-            grandchildren = table.connection.dependencies.children(
-                child_name
-            )
-            # only a single one should exist if aliased
-            child_name = list(grandchildren.keys())[0]
 
         # get child table
         child_table = config.get_table(child_name)
@@ -139,12 +128,12 @@ def get_jsontable(
         pass
     elif len(data) == 0:
         data = pd.DataFrame(
-            columns=['_id']+list(data.columns)
+            columns=['_id'] + list(data.columns)
         )
     else:
         _id = pd.Series(
             data[primary_key].to_dict('records')
-        )
+        ).apply(string_dump)
         _id.name = '_id'
         data = pd.concat([_id, data], axis=1)
 
@@ -196,7 +185,7 @@ def draw_helper(obj=None, type='table', only_essentials=False):
     # rankdir TB?
     # setup of graphviz
     graph_attr = {
-        'size': '12, 12', 'rankdir': 'LR', 'splines': 'ortho',
+        'rankdir': 'LR', 'splines': 'ortho',
         'fontname': 'helvetica'
     }
     node_attr = {
@@ -225,7 +214,7 @@ def draw_helper(obj=None, type='table', only_essentials=False):
             'fillcolor': 'azure4',
             'color': 'azure4',
             'fontsize': '10',
-            'fontcolor':'white'},
+            'fontcolor': 'white'},
         dj.Imported: {
             'fillcolor': 'navyblue',
             'color': 'navyblue',

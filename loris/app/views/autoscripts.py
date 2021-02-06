@@ -27,6 +27,9 @@ from loris.app.autoscripting.config_reader import ConfigReader
 from loris.app.subprocess import Run
 
 
+# TODO work on monitor streaming
+
+
 def stream_template(template_name, **context):
     app.update_template_context(context)
     t = app.jinja_env.get_template(template_name)
