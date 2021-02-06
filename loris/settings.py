@@ -27,9 +27,9 @@ from loris.io import read_pickle, write_pickle
 defaults = {
     "textarea_startlength": 512,
     # UPLOAD EXTENSIONS
-    "extensions": ['csv', 'npy', 'json', 'pkl'],
+    "extensions": ['csv', 'npy', 'json', 'pkl', 'npz'],
     "attach_extensions": (
-        ['csv', 'npy', 'json', 'pkl'] + [
+        ['csv', 'npy', 'json', 'pkl', 'npz'] + [
             'tiff', 'png', 'jpeg', 'mpg', 'hdf', 'hdf5', 'tar', 'zip',
             'txt', 'gif', 'svg', 'tif', 'bmp', 'doc', 'docx', 'rtf',
             'odf', 'ods', 'gnumeric', 'abw', 'xls', 'xlsx', 'ini',
@@ -38,6 +38,7 @@ defaults = {
             'irradcal', 'cal'  # calibration files
         ]
     ),
+    "additional_extensions": [],  # TODO
     # foreign key select field limit
     "fk_dropdown_limit": 200,
     "user_schema": "experimenters",
@@ -49,8 +50,8 @@ defaults = {
     "assignedgroup_schema": "experimenters",
     "assignedgroup_table": "AssignedExperimentalProject",
     "max_cpu": None,
-    "init_database": False,
-    "include_fly": True,
+    "init_database": True,
+    "include_fly": False,
     "import_schema_module": {},  # schema_name : file_location
     "tables_skip_permission": ['`subjects`.`fly_stock`'],
     "filestores": {
@@ -96,7 +97,6 @@ defaults = {
     # tables skipped to check for permission
 }
 AUTOSCRIPT_CONFIG = 'config.json'
-DOCKER_CONFIG = 'docker_config.json'
 USER_FILENAME = '._loris_config.json'
 USER_CONFIG = os.path.join(os.path.expanduser('~'), USER_FILENAME)
 GLOBAL_CONFIG = os.path.join(os.path.dirname(__file__), 'global_config.json')
@@ -121,14 +121,11 @@ class Config(dict):
             config_file = USER_CONFIG
 
             if not os.path.exists(config_file):
-                root_dir = os.path.split(os.path.split(__file__)[0])[0]
                 config_file = 'loris_config.json'
 
-            if not os.path.exists(config_file):
-                config_file = os.path.join(root_dir, 'config.json')
-
-            if not os.path.exists(config_file):
-                config_file = os.path.join(root_dir, DOCKER_CONFIG)
+                if not os.path.exists(config_file):
+                    root_dir = os.path.dirname(os.path.dirname(__file__))
+                    config_file = os.path.join(root_dir, 'config.json')
 
         if os.path.exists(config_file):
             with open(config_file, 'r') as f:

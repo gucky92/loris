@@ -9,9 +9,9 @@ import gzip
 import lzma
 import bz2
 import os
-import codecs
 import json
 from uuid import UUID
+import rapidjson
 
 from loris import ignore
 from loris.errors import LorisSerializationError
@@ -36,15 +36,18 @@ class UUIDEncoder(json.JSONEncoder):
 
 
 def string_dump(obj):
-    # return json.dumps(obj, cls=UUIDEncoder)
-    return codecs.encode(pickle.dumps(obj), "base64").decode()
+    return rapidjson.dumps(
+        obj,
+        uuid_mode=rapidjson.UM_CANONICAL,
+        datetime_mode=rapidjson.DM_ISO8601
+    )
 
 
 def string_load(string):
-    # return json.loads(string, )
-    return pickle.loads(
-        # empty spaces presumed to be pluses
-        codecs.decode(string.replace(" ", "+").encode(), 'base64')
+    return rapidjson.loads(
+        string.replace("'", '"'),
+        uuid_mode=rapidjson.UM_CANONICAL,
+        datetime_mode=rapidjson.DM_ISO8601
     )
 
 

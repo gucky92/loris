@@ -161,13 +161,18 @@ def run(schema, table):
 
             command = [
                 "python",
+                "-u",
                 filepath,
                 "--schema",
                 schema,
                 "--table",
                 table,
                 "--kwargs",
-                kwargs
+                kwargs,
+                "--user",
+                dj.config['database.user'],
+                "--password",
+                dj.config['database.password']
             ]
 
             config['_autopopulate'][table_name] = process

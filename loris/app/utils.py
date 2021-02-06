@@ -23,7 +23,7 @@ from loris.io import string_dump, string_load
 def datareader(value):
     """data reader for supported files, otherwise just return the file
     """
-    if value.endswith('npy'):
+    if value.endswith('npy') or value.endswith('npz'):
         value = np.load(value)
     elif value.endswith('csv'):
         value = pd.read_csv(value).to_records(False)
@@ -185,7 +185,7 @@ def draw_helper(obj=None, type='table', only_essentials=False):
     # rankdir TB?
     # setup of graphviz
     graph_attr = {
-        'size': '12, 12', 'rankdir': 'LR', 'splines': 'ortho',
+        'rankdir': 'LR', 'splines': 'ortho',
         'fontname': 'helvetica'
     }
     node_attr = {
@@ -214,7 +214,7 @@ def draw_helper(obj=None, type='table', only_essentials=False):
             'fillcolor': 'azure4',
             'color': 'azure4',
             'fontsize': '10',
-            'fontcolor':'white'},
+            'fontcolor': 'white'},
         dj.Imported: {
             'fillcolor': 'navyblue',
             'color': 'navyblue',
