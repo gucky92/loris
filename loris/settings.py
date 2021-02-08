@@ -476,14 +476,14 @@ class Config(dict):
             for key, ele in module.__dict__.items():
                 if key.split('.')[0] in self['schemata']:
                     continue
-                if isinstance(ele, dj.user_tables.OrderedClass):
+                if issubclass(ele, dj.user_tables.UserTable):
                     if is_manuallookup(ele) or issubclass(ele, dj.Settingstable):
                         continue
                     tables[f'{schema}.{key}'] = ele
 
                     # get part tables
                     for part_name, part_table in ele.__dict__.items():
-                        if isinstance(part_table, dj.user_tables.OrderedClass):
+                        if issubclass(part_table, dj.user_tables.UserTable):
                             if issubclass(part_table, dj.Part):
                                 tables[f'{schema}.{key}.{part_name}'] = \
                                     part_table
