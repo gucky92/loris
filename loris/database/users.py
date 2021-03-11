@@ -68,7 +68,7 @@ def grantuser(
     schema = dj.Schema(username)
 
     privileges = {
-        '*.*': "DELETE, SELECT, INSERT, UPDATE, REFERENCES, CREATE",
+        '*.*': "SELECT, INSERT, UPDATE, REFERENCES, CREATE",
         f'{username}.*': "ALL PRIVILEGES",
     }
     privileges.update(config['sql_privileges'])
