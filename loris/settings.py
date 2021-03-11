@@ -287,10 +287,7 @@ class Config(dict):
             self['database.port'] = port
             reconfigure_dj = True
         if self['database.user'] is None:
-            user = input(
-                "What is your Loris username "
-                "(defaults to `root`)? "
-            )
+            user = input("Please enter your Loris username: ")
             if not user:
                 user = 'root'
             self['database.user'] = user
