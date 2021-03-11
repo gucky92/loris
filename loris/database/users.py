@@ -95,3 +95,21 @@ def grantprivileges(
         conn.query(privilege, (username, connection))
 
     conn.query("FLUSH PRIVILEGES;")
+
+
+def revokeprivileges(
+    username,
+    conn,
+    privileges,
+    connection='%',
+):
+    """grant privileges to user
+    """
+
+    conn.query("FLUSH PRIVILEGES;")
+
+    for dbtable, privilege in privileges.items():
+        privilege = (f"REVOKE {privilege} ON {dbtable} to %s@%s;")
+        conn.query(privilege, (username, connection))
+
+    conn.query("FLUSH PRIVILEGES;")
