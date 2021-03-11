@@ -261,6 +261,16 @@ class Config(dict):
     def conn(self, *args, **kwargs):
         """connect to database with hostname, username, and password.
         """
+        newargs = dict(zip(['host', 'user', 'password'], args))
+        newargs.update(kwargs)
+        if newargs:
+            reconfigure_dj = False
+            for k, v in newargs:
+                if k in ['host', 'user', 'password']:
+                    self[f'database.{k}'] = v
+                    reconfigure_dj = True
+            if reconfigure_dj:
+                self.datajoint_configuration()
         # self.datajoint_configuration()
         self.connect_ssh()
         reconfigure_dj = False
