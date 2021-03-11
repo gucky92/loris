@@ -109,7 +109,7 @@ def revokeprivileges(
     conn.query("FLUSH PRIVILEGES;")
 
     for dbtable, privilege in privileges.items():
-        privilege = (f"REVOKE {privilege} ON {dbtable} to %s@%s;")
+        privilege = (f"REVOKE {privilege} ON {dbtable} FROM %s@%s;")
         conn.query(privilege, (username, connection))
 
     conn.query("FLUSH PRIVILEGES;")
