@@ -288,8 +288,6 @@ class Config(dict):
             reconfigure_dj = True
         if self['database.user'] is None:
             user = input("Please enter your Loris username: ")
-            if not user:
-                user = 'root'
             self['database.user'] = user
             reconfigure_dj = True
         if self['database.password'] is None:
