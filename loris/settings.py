@@ -265,7 +265,7 @@ class Config(dict):
         newargs.update(kwargs)
         if newargs:
             reconfigure_dj = False
-            for k, v in newargs:
+            for k, v in newargs.items():
                 if k in ['host', 'user', 'password']:
                     self[f'database.{k}'] = v
                     reconfigure_dj = True
