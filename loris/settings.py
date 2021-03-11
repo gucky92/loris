@@ -5,6 +5,7 @@ import json
 import os
 import sys
 import shutil
+from getpass import getpass
 import importlib
 import inspect
 import multiprocessing as mp
@@ -60,6 +61,8 @@ defaults = {
     },
     "database.host": None,
     "database.port": None,
+    "database.user": None,
+    "database.password": None,
     "connection.charset": "utf8",
     "enable_python_native_blobs": True,
     "enable_python_pickle_blobs": True,
@@ -93,7 +96,8 @@ defaults = {
     "ssh_address": None,
     "ssh_username": "administrator",
     "ssh_pkey": "~/.ssh/id_rsa",
-    "slack": []
+    "slack": [],
+    "sql_privileges": {}
     # tables skipped to check for permission
 }
 AUTOSCRIPT_CONFIG = 'config.json'
@@ -259,6 +263,7 @@ class Config(dict):
         """
         # self.datajoint_configuration()
         self.connect_ssh()
+        reconfigure_dj = False
         # database host
         if self['database.host'] is None:
             host = input(
@@ -268,6 +273,7 @@ class Config(dict):
             if not host:
                 host = '127.0.0.1'
             self['database.host'] = host
+            reconfigure_dj = True
         # database port
         if self['database.port'] is None:
             port = input(
@@ -279,6 +285,23 @@ class Config(dict):
             else:
                 port = int(port)
             self['database.port'] = port
+            reconfigure_dj = True
+        if self['database.user'] is None:
+            user = input(
+                "What is your Loris username "
+                "(defaults to `root`)? "
+            )
+            if not user:
+                user = 'root'
+            self['database.user'] = user
+            reconfigure_dj = True
+        if self['database.password'] is None:
+            pw = getpass(prompt="Please enter Loris password: ")
+            self['database.password'] = pw
+            reconfigure_dj = True
+
+        if reconfigure_dj:
+            self.datajoint_configuration()
 
         if self['database.host'] == 'mysql' and not (args or kwargs):
             try:
