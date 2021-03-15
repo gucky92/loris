@@ -20,6 +20,10 @@ from loris.utils import is_manuallookup
 from loris.io import string_dump, string_load
 
 
+# TODO deprecated
+user_has_permission = config.user_has_permission
+
+
 def datareader(value):
     """data reader for supported files, otherwise just return the file
     """
@@ -49,72 +53,6 @@ def filereader(value):
     assert not os.path.exists(dst)
     shutil.copyfile(value, dst)
     return dst
-
-
-def user_has_permission(table, user, skip_tables=None):
-    """test if user is allowed to delete an entry or perform another action
-    on a datajoint.Table
-    """
-
-    if user in config['administrators']:
-        return True
-
-    if table.database in config.groups_of_user(user):
-        return True
-
-    if skip_tables is None:
-        skip_tables = config['tables_skip_permission']
-        # skip_tables = []
-
-    # always add table name
-    skip_tables.append(table.full_table_name)
-
-    if not table.connection.dependencies:
-        table.connection.dependencies.load()
-
-    ancestors = table.ancestors()
-
-    if config.user_table.full_table_name in ancestors:
-        if config['user_name'] in table.heading:
-            user_only = table & {config['user_name']: user}
-            return len(user_only) == len(table)
-        else:
-            for parent_name, parent_info in table.parents(foreign_key_info=True):
-                if parent_name in skip_tables:
-                    continue
-
-                # get parent table
-                parent_table = config.get_table(parent_name)
-
-                # project only necessary keys
-                to_rename = {
-                    ele: key
-                    for key, ele in parent_info['attr_map'].items()
-                }
-                restricted_table = parent_table & table.proj(**to_rename)
-
-                if not user_has_permission(
-                    restricted_table, user, skip_tables
-                ):
-                    return False
-
-    # checks if children have a parent table that is dependent on user table
-    for child_name, child_info in table.children(foreign_key_info=True):
-        if child_name in skip_tables:
-            continue
-
-        # get child table
-        child_table = config.get_table(child_name)
-
-        # restrict only with necessary keys
-        restricted_table = child_table & table.proj(**child_info['attr_map'])
-
-        if not user_has_permission(
-            restricted_table, user, skip_tables
-        ):
-            return False
-
-    return True
 
 
 def get_jsontable(

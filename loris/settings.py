@@ -97,7 +97,7 @@ defaults = {
     "ssh_username": "administrator",
     "ssh_pkey": "~/.ssh/id_rsa",
     "slack": [],
-    "sql_privileges": {}
+    "sql_privileges": {},
     # tables skipped to check for permission
 }
 AUTOSCRIPT_CONFIG = 'config.json'
@@ -147,10 +147,80 @@ class Config(dict):
         config['custom_attributes'] = custom_attributes_dict
         config['_empty'] = []  # list of files in tmp to delete on refresh
         config['_autopopulate'] = {}  # dictionary of subprocesses
+        # delete permissions for datajoint
+        config['delete_permission'] = config.datajoint_delete_permission
         config.perform_checks()
         config.datajoint_configuration()
 
         return config
+
+    def datajoint_delete_permission(self, table):
+        return self.user_has_permission(table, self['database.user'])
+
+    def user_has_permission(self, table, user, skip_tables=None):
+        """test if user is allowed to delete an entry or perform another action
+        on a datajoint.Table
+        """
+
+        if user in self['administrators']:
+            return True
+
+        if table.database in self.groups_of_user(user):
+            return True
+
+        if skip_tables is None:
+            skip_tables = self['tables_skip_permission']
+            # skip_tables = []
+
+        # always add table name
+        skip_tables.append(table.full_table_name)
+
+        if not table.connection.dependencies:
+            table.connection.dependencies.load()
+
+        ancestors = table.ancestors()
+
+        if self.user_table.full_table_name in ancestors:
+            if self['user_name'] in table.heading:
+                user_only = table & {self['user_name']: user}
+                return len(user_only) == len(table)
+            else:
+                for parent_name, parent_info in table.parents(foreign_key_info=True):
+                    if parent_name in skip_tables:
+                        continue
+
+                    # get parent table
+                    parent_table = self.get_table(parent_name)
+
+                    # project only necessary keys
+                    to_rename = {
+                        ele: key
+                        for key, ele in parent_info['attr_map'].items()
+                    }
+                    restricted_table = parent_table & table.proj(**to_rename)
+
+                    if not self.user_has_permission(
+                        restricted_table, user, skip_tables
+                    ):
+                        return False
+
+        # checks if children have a parent table that is dependent on user table
+        for child_name, child_info in table.children(foreign_key_info=True):
+            if child_name in skip_tables:
+                continue
+
+            # get child table
+            child_table = self.get_table(child_name)
+
+            # restrict only with necessary keys
+            restricted_table = child_table & table.proj(**child_info['attr_map'])
+
+            if not self.user_has_permission(
+                restricted_table, user, skip_tables
+            ):
+                return False
+
+        return True
 
     @property
     def slacks(self):
