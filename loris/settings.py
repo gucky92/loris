@@ -581,7 +581,7 @@ class Config(dict):
 
                     # get part tables
                     for part_name, part_table in ele.__dict__.items():
-                        if inspect.isclass(ele):
+                        if inspect.isclass(part_table):
                             if issubclass(part_table, dj.Part):
                                 tables[f'{schema}.{key}.{part_name}'] = \
                                     part_table
