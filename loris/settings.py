@@ -396,7 +396,7 @@ class Config(dict):
                     f"(defaults to `~/loris/{filestore_name}`)? "
                 )
                 if not filestore:
-                    filestore = "~/loris/{filestore_name}"
+                    filestore = f"~/loris/{filestore_name}"
                 self['filestores'][filestore_name] = filestore
             filestore = os.path.expanduser(filestore)
             if not os.path.exists(filestore):
