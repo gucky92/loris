@@ -333,19 +333,11 @@ class Config(dict):
         """
         newargs = dict(zip(['host', 'user', 'password'], args))
         newargs.update(kwargs)
-        if newargs:
-            reconfigure_dj = False
-            for k, v in newargs.items():
-                if k in ['host', 'user', 'password']:
-                    self[f'database.{k}'] = v
-                    reconfigure_dj = True
-            if reconfigure_dj:
-                self.datajoint_configuration()
         # self.datajoint_configuration()
         self.connect_ssh()
         reconfigure_dj = False
         # database host
-        if self['database.host'] is None:
+        if self['database.host'] is None and 'host' not in newargs:
             host = input(
                 "What is the host address for your MySQL "
                 "instance (defaults to `127.0.0.1`)? "
@@ -355,7 +347,7 @@ class Config(dict):
             self['database.host'] = host
             reconfigure_dj = True
         # database port
-        if self['database.port'] is None:
+        if self['database.port'] is None and 'port' not in newargs:
             port = input(
                 "What is the port for your MySQL "
                 "instance (defaults to `3306`)? "
@@ -366,11 +358,11 @@ class Config(dict):
                 port = int(port)
             self['database.port'] = port
             reconfigure_dj = True
-        if self['database.user'] is None:
+        if self['database.user'] is None and 'user' not in newargs:
             user = input("Please enter your Loris/MySQL username: ")
             self['database.user'] = user
             reconfigure_dj = True
-        if self['database.password'] is None:
+        if self['database.password'] is None and 'password' not in newargs:
             pw = getpass(prompt="Please enter Loris/MySQL password: ")
             self['database.password'] = pw
             reconfigure_dj = True
@@ -378,7 +370,7 @@ class Config(dict):
         if reconfigure_dj:
             self.datajoint_configuration()
 
-        if self['database.host'] == 'mysql' and not (args or kwargs):
+        if self['database.host'] == 'mysql' and 'host' not in newargs:
             try:
                 self['connection'] = dj.conn(*args, **kwargs)
             except pymysql.OperationalError:
@@ -748,15 +740,18 @@ class Config(dict):
         """refresh permissions of users
         """
 
-        for user in self.users:
-            for schema in self.schemas_of_user(user):
-                conn = self['connection']
-                conn.query("FLUSH PRIVILEGES;")
-                conn.query(
-                    f"GRANT ALL PRIVILEGES ON {schema}.* to %s@%s;",
-                    (user, '%')
-                )
-                conn.query("FLUSH PRIVILEGES;")
+        try:
+            for user in self.users:
+                for schema in self.schemas_of_user(user):
+                    conn = self['connection']
+                    conn.query("FLUSH PRIVILEGES;")
+                    conn.query(
+                        f"GRANT ALL PRIVILEGES ON {schema}.* to %s@%s;",
+                        (user, '%')
+                    )
+                    conn.query("FLUSH PRIVILEGES;")
+        except Exception as e:
+            print(f"Did not refresh permissions! Due to \n {e}")
 
     def refresh_settings_tables(self):
         """refresh container of settings table
