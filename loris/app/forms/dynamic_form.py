@@ -169,9 +169,9 @@ class DynamicForm:
 
         part_fields = {}
 
-        for part_table in self.table.part_tables:
+        for part_table in self.table.parts(as_objects=True):
             # TODO aliased part tables
-            dynamicform = self.__class__(
+            dynamicform = type(self)(
                 part_table, skip=self.table.primary_key,
                 formtype=NoCsrfForm
             )
@@ -483,7 +483,7 @@ class DynamicForm:
         )
 
         # populate part tables
-        for part_table in self.table.part_tables:
+        for part_table in self.table.parts(as_objects=True):
             part_formatted_list_dict = (
                 part_table & restriction
             ).proj(*part_table.heading.non_blobs).fetch(as_dict=True)
