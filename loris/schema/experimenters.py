@@ -4,7 +4,7 @@
 
 import datajoint as dj
 
-from loris.database.schema.base import COMMENTS, ManualLookup, PRIMARY_NAME
+from loris.database.table_mixin import COMMENTS, ManualLookup, PRIMARY_NAME
 from loris.database.attributes import truebool
 from loris.database.attributes import lookupname
 from loris.database.attributes import email

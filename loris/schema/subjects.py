@@ -3,9 +3,12 @@
 
 import datajoint as dj
 
-from loris.database.schema.experimenters import Experimenter
-from loris.database.schema.anatomy import CellType
-from loris.database.schema.base import (
+# import schema
+from loris.schema.experimenters import Experimenter
+from loris.schema.anatomy import CellType
+
+# import database mixins
+from loris.database.table_mixin import (
     ManualLookup, COMMENTS, PRIMARY_NAME, TAGS
 )
 from loris.database.attributes import chr, link, flyidentifier, crossschema, stockid

@@ -10,7 +10,7 @@ from numbers import Number, Integral
 import numpy as np
 import datajoint as dj
 
-from loris.database.mixin import Placeholder, ProcessMixin
+from loris.database.attribute_mixin import Placeholder, ProcessMixin
 from loris.errors import LorisSerializationError
 from loris.io import spickledumps, spickleloads
 

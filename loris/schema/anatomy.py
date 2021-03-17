@@ -2,7 +2,8 @@
 """
 
 import datajoint as dj
-from loris.database.schema.base import ManualLookup, PRIMARY_NAME, COMMENTS
+
+from loris.database.table_mixin import ManualLookup, PRIMARY_NAME, COMMENTS
 from loris.database.attributes import lookupname, tags
 
 schema = dj.Schema('anatomy')

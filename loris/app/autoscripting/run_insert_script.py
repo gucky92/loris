@@ -23,7 +23,7 @@ from loris.app.forms.dynamic_form import DynamicForm
 from loris.app.subprocess import Run
 from loris.errors import LorisError
 from loris.app.utils import datareader, filereader
-from loris.database.schema.core import DataLookupName, FileLookupName
+from loris.schema.core import DataLookupName, FileLookupName
 
 
 def get_insert_part_mixin(

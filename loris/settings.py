@@ -367,11 +367,11 @@ class Config(dict):
             self['database.port'] = port
             reconfigure_dj = True
         if self['database.user'] is None:
-            user = input("Please enter your Loris username: ")
+            user = input("Please enter your Loris/MySQL username: ")
             self['database.user'] = user
             reconfigure_dj = True
         if self['database.password'] is None:
-            pw = getpass(prompt="Please enter Loris password: ")
+            pw = getpass(prompt="Please enter Loris/MySQL password: ")
             self['database.password'] = pw
             reconfigure_dj = True
 
@@ -385,6 +385,11 @@ class Config(dict):
                 self['connection'] = dj.conn('127.0.0.1', **kwargs)
         else:
             self['connection'] = dj.conn(*args, **kwargs)
+
+        # update backup context with schemata
+        if kwargs.get('refresh', False):
+            self.refresh_schema()
+        dj.config['backup_context'].update(self['schemata'])
         return self['connection']
 
     def datajoint_configuration(self):
@@ -451,22 +456,16 @@ class Config(dict):
         # direct loading if possible
         # TODO (also in app init)
         if self['init_database']:
-            from loris.database.schema import (
-                equipment, experimenters, core, misc
+            from loris.schema import (
+                experimenters, core
             )
 
-            schemata['equipment'] = equipment  # move out
             schemata['experimenters'] = experimenters
             schemata['core'] = core
 
             if self['include_fly']:
-                from loris.database.schema import (
-                    anatomy, imaging, recordings, subjects
-                )
-
+                from loris.schema import anatomy, subjects
                 schemata['anatomy'] = anatomy  # move out
-                schemata['imaging'] = imaging  # move out
-                schemata['recordings'] = recordings  # move out
                 schemata['subjects'] = subjects
 
         for schema, module_path in self["import_schema_module"]:
