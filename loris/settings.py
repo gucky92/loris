@@ -573,7 +573,8 @@ class Config(dict):
             for key, ele in module.__dict__.items():
                 if key.split('.')[0] in self['schemata']:
                     continue
-                if issubclass(ele, dj.user_tables.UserTable):
+
+                if inspect.isclass(ele) and issubclass(ele, dj.user_tables.UserTable):
                     if is_manuallookup(ele) or issubclass(ele, dj.Settingstable):
                         continue
                     tables[f'{schema}.{key}'] = ele
