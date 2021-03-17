@@ -379,7 +379,7 @@ class Config(dict):
             self['connection'] = dj.conn(*args, **kwargs)
 
         # update backup context with schemata
-        if kwargs.get('refresh', False):
+        if newargs.get('refresh', False):
             self.refresh_schema()
         dj.config['backup_context'].update(self['schemata'])
         return self['connection']
