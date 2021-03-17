@@ -333,11 +333,12 @@ class Config(dict):
         """
         newargs = dict(zip(['host', 'user', 'password'], args))
         newargs.update(kwargs)
+        already_connected = 'connection' in self
         # self.datajoint_configuration()
         self.connect_ssh()
         reconfigure_dj = False
         # database host
-        if self['database.host'] is None and 'host' not in newargs:
+        if self['database.host'] is None and 'host' not in newargs and not already_connected:
             host = input(
                 "What is the host address for your MySQL "
                 "instance (defaults to `127.0.0.1`)? "
@@ -347,7 +348,7 @@ class Config(dict):
             self['database.host'] = host
             reconfigure_dj = True
         # database port
-        if self['database.port'] is None and 'port' not in newargs:
+        if self['database.port'] is None and 'port' not in newargs and not already_connected:
             port = input(
                 "What is the port for your MySQL "
                 "instance (defaults to `3306`)? "
@@ -358,11 +359,11 @@ class Config(dict):
                 port = int(port)
             self['database.port'] = port
             reconfigure_dj = True
-        if self['database.user'] is None and 'user' not in newargs:
+        if self['database.user'] is None and 'user' not in newargs and not already_connected:
             user = input("Please enter your Loris/MySQL username: ")
             self['database.user'] = user
             reconfigure_dj = True
-        if self['database.password'] is None and 'password' not in newargs:
+        if self['database.password'] is None and 'password' not in newargs and not already_connected:
             pw = getpass(prompt="Please enter Loris/MySQL password: ")
             self['database.password'] = pw
             reconfigure_dj = True
@@ -372,11 +373,12 @@ class Config(dict):
 
         if self['database.host'] == 'mysql' and 'host' not in newargs:
             try:
-                self['connection'] = dj.conn(*args, **kwargs)
+                self['connection'] = dj.conn(**newargs)
             except pymysql.OperationalError:
-                self['connection'] = dj.conn('127.0.0.1', **kwargs)
+                newargs.pop('host')
+                self['connection'] = dj.conn('127.0.0.1', **newargs)
         else:
-            self['connection'] = dj.conn(*args, **kwargs)
+            self['connection'] = dj.conn(**newargs)
 
         # update backup context with schemata
         if newargs.get('refresh', False):
