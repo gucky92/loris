@@ -162,6 +162,9 @@ class Config(dict):
         on a datajoint.Table
         """
 
+        if user is None:
+            user = self['connection'].get_user().split('@')[0]
+
         if user in self['administrators']:
             return True
 
