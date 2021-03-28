@@ -11,17 +11,15 @@ import inspect
 import multiprocessing as mp
 from collections import defaultdict
 import pymysql
-import warnings
 import datajoint as dj
 from datajoint.settings import default
 from datajoint.utils import to_camel_case
-from sshtunnel import SSHTunnelForwarder, HandlerSSHTunnelForwarderError
+from sshtunnel import SSHTunnelForwarder
 from werkzeug.utils import secure_filename
 
 from loris.database.attributes import custom_attributes_dict
 from loris.utils import is_manuallookup
 from loris.errors import LorisError
-from loris.io import read_pickle, write_pickle
 
 
 # defaults for application

@@ -49,6 +49,47 @@ class PickleData(SavePickleMixin, dj.AttributeAdapter):
     attribute_type = 'blob@datastore'
 
 
+class ArrMixin:
+
+    def __init__(self, ndim=None, shape=None, atleast=False):
+        self.ndim = ndim
+        self.shape = shape
+        self.atleast = atleast
+
+    def put(self, obj):
+        if obj is None:
+            return
+
+        if not isinstance(obj, np.ndarray):
+            raise TypeError(f"object must be of type `numpy.ndarray`, but is of type `{type(obj)}`")
+
+        if self.ndim is None and self.shape is None:
+            return obj
+
+        if self.ndim is not None:
+            if self.atleast:
+                assert obj.ndim >= self.ndim, f"object has dimensionality `{obj.ndim}`, but only dimensionality `{self.ndim}` or above is allowed."
+            else:
+                assert obj.ndim == self.ndim, f"object has dimensionality `{obj.ndim}`, but only dimensionality `{self.ndim}` is allowed."
+
+        if self.shape is not None:
+            for dim, (allowed_len, is_len) in enumerate(zip(self.shape[::-1], obj.shape[::-1])):
+                assert allowed_len == is_len, f"object has length `{is_len}` for dimension {dim}, but must be length `{allowed_len}`"
+
+        return obj
+
+    def get(self, obj):
+        return obj
+
+
+class ArrStore(ArrMixin, dj.AttributeAdapter):
+    attribute_type = 'blob@datastore'
+
+
+class ArrBlob(ArrMixin, dj.AttributeAdapter):
+    attribute_type = 'longblob'
+
+
 class LookupName(dj.AttributeAdapter):
     """a string with stripped of
     """
@@ -60,7 +101,7 @@ class LookupName(dj.AttributeAdapter):
             return
 
         if isinstance(obj, str):
-            obj = obj.strip() # .lower() - removed since MySQL does not distinguish
+            obj = obj.strip()  # .lower() - removed since MySQL does not distinguish
         else:
             raise dj.DataJointError(
                 f"lookup name '{obj}' must be of type "
@@ -88,6 +129,7 @@ class PrefixId(dj.AttributeAdapter):
     attribute_type = 'varchar(127)'
 
     def __init__(self, prefix=''):
+        super().__init__()
         self.prefix = prefix
 
     def put(self, obj):
@@ -489,6 +531,19 @@ pickleblob = PickleBlob()
 folderpath = FolderPath()
 stockid = PrefixId(prefix='s')
 
+arrblob = ArrBlob()
+arrstore = ArrStore()
+
+arr1blob = ArrBlob(1)
+arr1store = ArrStore(1)
+
+arr2blob = ArrBlob(2)
+arr2store = ArrStore(2)
+
+arr3blob = ArrBlob(3)
+arr3store = ArrStore(3)
+
+
 custom_attributes_dict = {
     'chr': chr,
     'link': link,
@@ -512,5 +567,13 @@ custom_attributes_dict = {
     'stockid': stockid,
     'dreyejson': dreyejson,
     'numberlist': numberlist,
-    'numberdict': numberdict
+    'numberdict': numberdict,
+    'arrblob': arrblob,
+    'arrstore': arrstore,
+    'arr1blob': arr1blob,
+    'arr1store': arr1store,
+    'arr2blob': arr2blob,
+    'arr2store': arr2store,
+    'arr3blob': arr3blob,
+    'arr3store': arr3store,
 }

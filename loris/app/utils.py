@@ -12,12 +12,12 @@ import shutil
 import datajoint as dj
 import numpy as np
 from datajoint.schemas import lookup_class_name
-from flask import render_template, request, flash, url_for, redirect
+from flask import url_for
 
-from loris import config, conn
+from loris import config
 from loris.errors import LorisError
 from loris.utils import is_manuallookup
-from loris.io import string_dump, string_load
+from loris.io import string_dump
 
 
 # TODO deprecated
