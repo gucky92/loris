@@ -90,7 +90,10 @@ def inserting_autoscript_stuff(attr, value, table_class, primary_dict):
             value = datareader(value)
         else:
             value = filereader(value)
-        (table_class & primary_dict).save_update(attr, value)
+        # update table
+        table_class.update1(
+            {**primary_dict, **{attr: value}}
+        )
     else:
         raise LorisError(f'attr {attr} does not exist in '
                          f'table {table_class.full_table_name}')
