@@ -37,7 +37,8 @@ def grantuser(
     username,
     connection='%',
     password=None,
-    adduser=False
+    adduser=False,
+    **privs
 ):
     """Add a user to the database. Requires admin/granting access.
     It also adds a user-specific schema
@@ -52,7 +53,7 @@ def grantuser(
     # for safety flush all privileges
     conn.query("FLUSH PRIVILEGES;")
 
-    #create user
+    # create user
     if adduser:
         conn.query(
             "DROP USER IF EXISTS %s@%s;",
@@ -67,9 +68,11 @@ def grantuser(
     schema = dj.Schema(username)
 
     privileges = {
-        '*.*': "DELETE, SELECT, INSERT, UPDATE, REFERENCES, CREATE",
-        f'{username}.*': "ALL PRIVILEGES"
+        '*.*': "SELECT, INSERT, UPDATE, REFERENCES, CREATE",
+        f'{username}.*': "ALL PRIVILEGES",
     }
+    privileges.update(config['sql_privileges'])
+    privileges.update(privs)
 
     grantprivileges(username, conn, privileges, connection)
 
@@ -89,6 +92,24 @@ def grantprivileges(
 
     for dbtable, privilege in privileges.items():
         privilege = (f"GRANT {privilege} ON {dbtable} to %s@%s;")
+        conn.query(privilege, (username, connection))
+
+    conn.query("FLUSH PRIVILEGES;")
+
+
+def revokeprivileges(
+    username,
+    conn,
+    privileges,
+    connection='%',
+):
+    """grant privileges to user
+    """
+
+    conn.query("FLUSH PRIVILEGES;")
+
+    for dbtable, privilege in privileges.items():
+        privilege = (f"REVOKE {privilege} ON {dbtable} FROM %s@%s;")
         conn.query(privilege, (username, connection))
 
     conn.query("FLUSH PRIVILEGES;")

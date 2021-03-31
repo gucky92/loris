@@ -5,22 +5,21 @@ import json
 import os
 import sys
 import shutil
+from getpass import getpass
 import importlib
 import inspect
 import multiprocessing as mp
 from collections import defaultdict
 import pymysql
-import warnings
 import datajoint as dj
 from datajoint.settings import default
 from datajoint.utils import to_camel_case
-from sshtunnel import SSHTunnelForwarder, HandlerSSHTunnelForwarderError
+from sshtunnel import SSHTunnelForwarder
 from werkzeug.utils import secure_filename
 
 from loris.database.attributes import custom_attributes_dict
 from loris.utils import is_manuallookup
 from loris.errors import LorisError
-from loris.io import read_pickle, write_pickle
 
 
 # defaults for application
@@ -60,6 +59,8 @@ defaults = {
     },
     "database.host": None,
     "database.port": None,
+    "database.user": None,
+    "database.password": None,
     "connection.charset": "utf8",
     "enable_python_native_blobs": True,
     "enable_python_pickle_blobs": True,
@@ -93,7 +94,8 @@ defaults = {
     "ssh_address": None,
     "ssh_username": "administrator",
     "ssh_pkey": "~/.ssh/id_rsa",
-    "slack": []
+    "slack": [],
+    "sql_privileges": {},
     # tables skipped to check for permission
 }
 AUTOSCRIPT_CONFIG = 'config.json'
@@ -143,10 +145,83 @@ class Config(dict):
         config['custom_attributes'] = custom_attributes_dict
         config['_empty'] = []  # list of files in tmp to delete on refresh
         config['_autopopulate'] = {}  # dictionary of subprocesses
+        # delete permissions for datajoint
+        config['delete_permission'] = config.datajoint_delete_permission
         config.perform_checks()
         config.datajoint_configuration()
 
         return config
+
+    def datajoint_delete_permission(self, table):
+        return self.user_has_permission(table, self['database.user'])
+
+    def user_has_permission(self, table, user, skip_tables=None):
+        """test if user is allowed to delete an entry or perform another action
+        on a datajoint.Table
+        """
+
+        if user is None:
+            user = self['connection'].get_user().split('@')[0]
+
+        if user in self['administrators']:
+            return True
+
+        if table.database in self.groups_of_user(user):
+            return True
+
+        if skip_tables is None:
+            skip_tables = self['tables_skip_permission']
+            # skip_tables = []
+
+        # always add table name
+        skip_tables.append(table.full_table_name)
+
+        if not table.connection.dependencies:
+            table.connection.dependencies.load()
+
+        ancestors = table.ancestors()
+
+        if self.user_table.full_table_name in ancestors:
+            if self['user_name'] in table.heading:
+                user_only = table & {self['user_name']: user}
+                return len(user_only) == len(table)
+            else:
+                for parent_name, parent_info in table.parents(foreign_key_info=True):
+                    if parent_name in skip_tables:
+                        continue
+
+                    # get parent table
+                    parent_table = self.get_table(parent_name)
+
+                    # project only necessary keys
+                    to_rename = {
+                        ele: key
+                        for key, ele in parent_info['attr_map'].items()
+                    }
+                    restricted_table = parent_table & table.proj(**to_rename)
+
+                    if not self.user_has_permission(
+                        restricted_table, user, skip_tables
+                    ):
+                        return False
+
+        # checks if children have a parent table that is dependent on user table
+        for child_name, child_info in table.children(foreign_key_info=True):
+            if child_name in skip_tables:
+                continue
+
+            # get child table
+            child_table = self.get_table(child_name)
+
+            # restrict only with necessary keys
+            restricted_table = child_table & table.proj(**child_info['attr_map'])
+
+            if not self.user_has_permission(
+                restricted_table, user, skip_tables
+            ):
+                return False
+
+        return True
 
     @property
     def slacks(self):
@@ -257,10 +332,14 @@ class Config(dict):
     def conn(self, *args, **kwargs):
         """connect to database with hostname, username, and password.
         """
+        newargs = dict(zip(['host', 'user', 'password'], args))
+        newargs.update(kwargs)
+        already_connected = 'connection' in self
         # self.datajoint_configuration()
         self.connect_ssh()
+        reconfigure_dj = False
         # database host
-        if self['database.host'] is None:
+        if self['database.host'] is None and 'host' not in newargs and not already_connected:
             host = input(
                 "What is the host address for your MySQL "
                 "instance (defaults to `127.0.0.1`)? "
@@ -268,8 +347,9 @@ class Config(dict):
             if not host:
                 host = '127.0.0.1'
             self['database.host'] = host
+            reconfigure_dj = True
         # database port
-        if self['database.port'] is None:
+        if self['database.port'] is None and 'port' not in newargs and not already_connected:
             port = input(
                 "What is the port for your MySQL "
                 "instance (defaults to `3306`)? "
@@ -279,14 +359,32 @@ class Config(dict):
             else:
                 port = int(port)
             self['database.port'] = port
+            reconfigure_dj = True
+        if self['database.user'] is None and 'user' not in newargs and not already_connected:
+            user = input("Please enter your Loris/MySQL username: ")
+            self['database.user'] = user
+            reconfigure_dj = True
+        if self['database.password'] is None and 'password' not in newargs and not already_connected:
+            pw = getpass(prompt="Please enter Loris/MySQL password: ")
+            self['database.password'] = pw
+            reconfigure_dj = True
 
-        if self['database.host'] == 'mysql' and not (args or kwargs):
+        if reconfigure_dj:
+            self.datajoint_configuration()
+
+        if self['database.host'] == 'mysql' and 'host' not in newargs:
             try:
-                self['connection'] = dj.conn(*args, **kwargs)
+                self['connection'] = dj.conn(**newargs)
             except pymysql.OperationalError:
-                self['connection'] = dj.conn('127.0.0.1', **kwargs)
+                newargs.pop('host')
+                self['connection'] = dj.conn('127.0.0.1', **newargs)
         else:
-            self['connection'] = dj.conn(*args, **kwargs)
+            self['connection'] = dj.conn(**newargs)
+
+        # update backup context with schemata
+        if newargs.get('refresh', False):
+            self.refresh_schema()
+        dj.config['backup_context'].update(self['schemata'])
         return self['connection']
 
     def datajoint_configuration(self):
@@ -301,7 +399,7 @@ class Config(dict):
                     f"(defaults to `~/loris/{filestore_name}`)? "
                 )
                 if not filestore:
-                    filestore = "~/loris/{filestore_name}"
+                    filestore = f"~/loris/{filestore_name}"
                 self['filestores'][filestore_name] = filestore
             filestore = os.path.expanduser(filestore)
             if not os.path.exists(filestore):
@@ -353,22 +451,16 @@ class Config(dict):
         # direct loading if possible
         # TODO (also in app init)
         if self['init_database']:
-            from loris.database.schema import (
-                equipment, experimenters, core, misc
+            from loris.schema import (
+                experimenters, core
             )
 
-            schemata['equipment'] = equipment  # move out
             schemata['experimenters'] = experimenters
             schemata['core'] = core
 
             if self['include_fly']:
-                from loris.database.schema import (
-                    anatomy, imaging, recordings, subjects
-                )
-
+                from loris.schema import anatomy, subjects
                 schemata['anatomy'] = anatomy  # move out
-                schemata['imaging'] = imaging  # move out
-                schemata['recordings'] = recordings  # move out
                 schemata['subjects'] = subjects
 
         for schema, module_path in self["import_schema_module"]:
@@ -476,14 +568,15 @@ class Config(dict):
             for key, ele in module.__dict__.items():
                 if key.split('.')[0] in self['schemata']:
                     continue
-                if isinstance(ele, dj.user_tables.OrderedClass):
+
+                if inspect.isclass(ele) and issubclass(ele, dj.user_tables.UserTable):
                     if is_manuallookup(ele) or issubclass(ele, dj.Settingstable):
                         continue
                     tables[f'{schema}.{key}'] = ele
 
                     # get part tables
                     for part_name, part_table in ele.__dict__.items():
-                        if isinstance(part_table, dj.user_tables.OrderedClass):
+                        if inspect.isclass(part_table):
                             if issubclass(part_table, dj.Part):
                                 tables[f'{schema}.{key}.{part_name}'] = \
                                     part_table
@@ -650,15 +743,18 @@ class Config(dict):
         """refresh permissions of users
         """
 
-        for user in self.users:
-            for schema in self.schemas_of_user(user):
-                conn = self['connection']
-                conn.query("FLUSH PRIVILEGES;")
-                conn.query(
-                    f"GRANT ALL PRIVILEGES ON {schema}.* to %s@%s;",
-                    (user, '%')
-                )
-                conn.query("FLUSH PRIVILEGES;")
+        try:
+            for user in self.users:
+                for schema in self.schemas_of_user(user):
+                    conn = self['connection']
+                    conn.query("FLUSH PRIVILEGES;")
+                    conn.query(
+                        f"GRANT ALL PRIVILEGES ON {schema}.* to %s@%s;",
+                        (user, '%')
+                    )
+                    conn.query("FLUSH PRIVILEGES;")
+        except Exception as e:
+            print(f"Did not refresh permissions! Due to \n {e}")
 
     def refresh_settings_tables(self):
         """refresh container of settings table

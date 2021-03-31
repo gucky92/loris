@@ -169,9 +169,9 @@ class DynamicForm:
 
         part_fields = {}
 
-        for part_table in self.table.part_tables:
+        for part_table in self.table.parts(as_objects=True):
             # TODO aliased part tables
-            dynamicform = self.__class__(
+            dynamicform = type(self)(
                 part_table, skip=self.table.primary_key,
                 formtype=NoCsrfForm
             )
@@ -366,17 +366,15 @@ class DynamicForm:
 
         if _id is None or kwargs.get('replace', False):
             truth = True
-        else:
-            restricted_table = self.table & _id
-            if len(restricted_table) == 0:
-                if override_update_truth:
-                    truth = True
-                else:
-                    raise dj.DataJointError(
-                        f'Entry {_id} does not exist; cannot update.'
-                    )
+        elif len(self.table & _id) == 0:
+            if override_update_truth:
+                truth = True
             else:
-                truth = False
+                raise dj.DataJointError(
+                    f'Entry {_id} does not exist; cannot update.'
+                )
+        else:
+            truth = False
 
         if primary_dict is not None:
             insert_dict = {**primary_dict, **insert_dict}
@@ -412,14 +410,14 @@ class DynamicForm:
                     f"{self.table.full_table_name}: {e}"
                 )
         else:  # editing entries savely
-            # remove primary keys
+            # DO NOT remove primary keys with new update1 method
             insert_dict = {
                 key: value for key, value in insert_dict.items()
                 if (
-                    key not in self.table.primary_key
+                    # key not in self.table.primary_key
                     # skip updating non-specified files
                     # TODO fix for uploading files
-                    and not (
+                    not (
                         value is None
                         and (
                             self.fields[key].attr.is_blob
@@ -430,9 +428,7 @@ class DynamicForm:
             }
             if insert_dict:
                 try:
-                    restricted_table.save_updates(
-                        insert_dict, reload=False
-                    )
+                    self.table.update1(insert_dict)
                 except dj.DataJointError as e:
                     raise dj.DataJointError(
                         "An error occured while updating table "
@@ -483,7 +479,7 @@ class DynamicForm:
         )
 
         # populate part tables
-        for part_table in self.table.part_tables:
+        for part_table in self.table.parts(as_objects=True):
             part_formatted_list_dict = (
                 part_table & restriction
             ).proj(*part_table.heading.non_blobs).fetch(as_dict=True)

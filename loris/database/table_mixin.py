@@ -1,4 +1,5 @@
-"""Base classes for tables
+"""
+Base classes and parameters that can be used to create tables
 """
 
 COMMENTS = 'comments = null : varchar(4000)'
