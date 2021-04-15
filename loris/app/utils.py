@@ -89,7 +89,10 @@ def get_jsontable(
 
 def name_lookup(full_name):
     """ Look for a table's class name given its full name. """
-    return lookup_class_name(full_name, config['schemata']) or full_name
+    try:
+        return config.get_table(full_name).name
+    except Exception:
+        return full_name
 
 
 def draw_helper(obj=None, type='table', only_essentials=False):
