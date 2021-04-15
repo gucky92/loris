@@ -514,7 +514,7 @@ class Config(dict):
 
         return table
 
-    def get_table(self, full_table_name):
+    def get_table(self, full_table_name, as_string=False):
         """get table from schemata using full_table_name
         """
 
@@ -529,31 +529,25 @@ class Config(dict):
 
         table_name = table_name.strip('_#')
         table_name_list = table_name.split('__')
-        if len(table_name_list) == 1:
-            table_name = to_camel_case(table_name)
+        if as_string:
+            output = schema
+        else:
+            output = schema_module
+
+        for tname in table_name_list:
+            tname = to_camel_case(tname)
             try:
-                return getattr(schema_module, table_name)
+                if as_string:
+                    output = '.'.join([output, tname])
+                else:
+                    output = getattr(output, tname)
             except AttributeError:
                 raise LorisError(
                     f'table {table_name} not in schema {schema}; '
                     'refresh database'
                 )
-        else:
-            assert len(table_name_list) == 2, \
-                f'invalid table name {table_name}.'
-            table_name = to_camel_case(table_name_list[0])
-            part_table_name = to_camel_case(table_name_list[1])
-            try:
-                return getattr(
-                    getattr(schema_module, table_name),
-                    part_table_name
-                )
-            except AttributeError:
-                raise LorisError(
-                    f'table {table_name} not in schema {schema} '
-                    f'or part table {part_table_name} not in table {table_name}'
-                    '; refresh database'
-                )
+
+        return output
 
     def refresh_tables(self):
         """refresh container of tables
