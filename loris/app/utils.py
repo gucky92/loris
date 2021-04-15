@@ -90,7 +90,7 @@ def get_jsontable(
 def name_lookup(full_name):
     """ Look for a table's class name given its full name. """
     try:
-        return config.get_table(full_name).name
+        return config.get_table(full_name, as_string=True)
     except Exception:
         return full_name
 
