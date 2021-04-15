@@ -26,7 +26,10 @@ def _get_name(table):
     if hasattr(table, "name"):
         return table.name
     else:
-        return table.__name__
+        # split for part tables
+        return dj.utils.to_camel_case(table.table_name.split('__')[-1])
+    # else:
+    #     return table.__name__
 
 
 class DynamicForm:
