@@ -430,7 +430,7 @@ class DynamicForm:
                     )
                 )
             }
-            if insert_dict:
+            if insert_dict and bool(set(insert_dict) - set(self.table.primary_key)):
                 try:
                     self.table.update1(insert_dict)
                 except dj.DataJointError as e:

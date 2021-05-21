@@ -10,6 +10,7 @@ database/*
 tmp/*
 .DS_Store
 loris/global_config.json
+.vscode/*
 
 # Byte-compiled / optimized / DLL files
 __pycache__/
