@@ -49,7 +49,7 @@ class IntegerCache(dj.Manual):
         # if already in table do not need to keep in cache
         for entry in self:
             table = config.get_table(entry['full_table_name'])
-            if len(table & {entry['att_name']: entry['number']}) > 0:
+            if len(table & {entry['attr_name']: entry['number']}) > 0:
                 (self & entry).delete_quick()
 
     def get_next_number(self, table, attr_name, number):
