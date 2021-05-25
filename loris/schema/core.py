@@ -33,3 +33,37 @@ class FileLookupName(ManualLookup, dj.Manual):
 @schema
 class LookupRegex(ManualLookup, dj.Manual):
     primary_comment = 'a regular expression commonly used'
+
+
+@schema
+class IntegerCache(dj.Manual):
+    definition = """
+    full_table_name : varchar(255)
+    attr_name : varchar(255)
+    number : int
+    ---
+    """
+
+    def clear(self):
+        from loris import config
+        # if already in table do not need to keep in cache
+        for entry in self:
+            table = config.get_table(entry['full_table_name'])
+            if len(table & {entry['att_name']: entry['number']}) > 0:
+                (self & entry).delete_quick()
+
+    def get_next_number(self, table, attr_name, number):
+        entry = {
+            'full_table_name': table.full_table_name, 
+            'attr_name': attr_name, 
+            'number': number
+        }
+        restricted_self = self & entry
+        if bool(len(restricted_self)):
+            return self.get_next_number(table, attr_name, number+1)
+        else:
+            self.insert1(entry)
+            return number
+
+
+

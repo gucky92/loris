@@ -413,6 +413,7 @@ class DynamicForm:
                     "An error occured while inserting into table "
                     f"{self.table.full_table_name}: {e}"
                 )
+            config.integer_cache.clear()
         else:  # editing entries savely
             # DO NOT remove primary keys with new update1 method
             insert_dict = {

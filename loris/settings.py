@@ -152,6 +152,11 @@ class Config(dict):
 
         return config
 
+    @property
+    def integer_cache(self):
+        from loris.schema.core import IntegerCache
+        return IntegerCache()
+
     def datajoint_delete_permission(self, table):
         return self.user_has_permission(table, self['database.user'])
 
@@ -851,6 +856,7 @@ class Config(dict):
         self.refresh_settings_tables()
         self.refresh_automaker_tables()
         self.refresh_permissions()
+        self.integer_cache.clear()
 
     def get_dynamicform(
         self, table_name, table_class, dynamic_class, **kwargs

@@ -15,6 +15,16 @@ from loris.errors import LorisSerializationError
 from loris.io import spickledumps, spickleloads
 
 
+class IntType(dj.AttributeAdapter):
+
+    attribute_type = 'int auto_increment'
+
+    def put(self, obj):
+        return obj
+
+    def get(self, obj):
+        return obj
+
 class TrueBool(dj.AttributeAdapter):
 
     attribute_type = 'bool'
@@ -543,6 +553,8 @@ arr2store = ArrStore(2)
 arr3blob = ArrBlob(3)
 arr3store = ArrStore(3)
 
+inttype = IntType()
+
 
 custom_attributes_dict = {
     'chr': chr,
@@ -576,4 +588,5 @@ custom_attributes_dict = {
     'arr2store': arr2store,
     'arr3blob': arr3blob,
     'arr3store': arr3store,
+    'inttype': inttype
 }
