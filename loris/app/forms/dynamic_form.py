@@ -513,7 +513,10 @@ class DynamicForm:
 
         for field in self.fields.values():
             field.update_field(form)
-        form.process()
+        try:
+            form.process()
+        except Exception:
+            pass
 
     def draw_relations(self):
         """draw relations
