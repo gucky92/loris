@@ -869,15 +869,15 @@ class Config(dict):
         if name not in self['dynamicforms']:
             self['dynamicforms'][name] = {}
 
-        if table_name not in self['dynamicforms'][name]:
-            dynamicform = dynamic_class(table_class)
-            form = dynamicform.formclass(**kwargs)
-            self['dynamicforms'][name][table_name] = dynamicform
-        else:
-            # update foreign keys
-            dynamicform = self['dynamicforms'][name][table_name]
-            form = dynamicform.formclass(**kwargs)
-            dynamicform.update_fields(form)
+        # if table_name not in self['dynamicforms'][name]:
+        dynamicform = dynamic_class(table_class)
+        form = dynamicform.formclass(**kwargs)
+        self['dynamicforms'][name][table_name] = dynamicform
+        # else:
+        #     # update foreign keys
+        #     dynamicform = self['dynamicforms'][name][table_name]
+        #     form = dynamicform.formclass(**kwargs)
+        #     dynamicform.update_fields(form)
 
         return dynamicform, form
 
