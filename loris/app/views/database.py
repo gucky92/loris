@@ -208,7 +208,7 @@ def drop():
                         table = table()
                     conn = config['connection']
                     conn.start_transaction()
-                    _, message = table()._delete_cascade(return_message=True)
+                    _, message = table._delete_cascade(return_message=True)
                     conn.cancel_transaction()
                     flash(message, 'warning')
                     flash("The entries of the selected table below will be dropped upon pressing submit!")
