@@ -23,7 +23,7 @@ from loris.app.utils import draw_helper, get_jsontable, user_has_permission
 from loris.utils import save_join
 from loris.app.login import User
 from loris.database.users import grantuser, change_password
-from loris.io import string_load, string_dump, write_pickle, read_pickle
+from loris.io import string_load, string_dump, write_json, read_json
 
 
 @app.route('/refresh')
@@ -125,7 +125,7 @@ def join():
                                 )
                         else:
                             if filepath.endswith('.pkl'):
-                                df = pd.read_pickle(filepath)
+                                df = pd.read_json(filepath)
                             else:
                                 df = pd.read_csv(filepath)
                             
@@ -176,7 +176,7 @@ def drop():
         return redirect(url_for('/'))
 
     if os.path.exists(TMP_DROP_EXECUTABLE):
-        executable = read_pickle(TMP_DROP_EXECUTABLE)
+        executable = read_json(TMP_DROP_EXECUTABLE)
     else:
         executable = {}
 
@@ -200,7 +200,7 @@ def drop():
                 if submit == 'Drop':
                     flash(f"Are you sure you want to delete table `{formatted_dict['table']}`", "warning")
                     flash("The selected table below will be dropped upon pressing submit!")
-                    write_pickle(TMP_DROP_EXECUTABLE, {"formatted_dict": formatted_dict, "type": "drop"})
+                    write_json(TMP_DROP_EXECUTABLE, {"formatted_dict": formatted_dict, "type": "drop"})
                 elif submit == 'Delete':
                     table = table & restriction
                     conn = config['connection']
@@ -209,7 +209,7 @@ def drop():
                     conn.cancel_transaction()
                     flash(message, 'warning')
                     flash("The entries of the selected table below will be dropped upon pressing submit!")
-                    write_pickle(TMP_DROP_EXECUTABLE, {"formatted_dict": formatted_dict, "type": "delete"})
+                    write_json(TMP_DROP_EXECUTABLE, {"formatted_dict": formatted_dict, "type": "delete"})
                 elif executable:
                     if executable.get('formatted_dict', {}) != formatted_dict:
                         flash("Error in submission of request! Try again.", "error")

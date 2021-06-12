@@ -51,6 +51,19 @@ def string_load(string):
     )
 
 
+def write_json(filename, obj):
+    with open(filename, 'w') as f:
+        data = string_dump(obj)
+        f.write(data)
+
+
+def read_json(filename):
+    with open(filename, 'r') as f:
+        data = f.read()
+        obj = string_load(data)
+    return obj
+
+
 def infer_compression_from_filename(filename: str) -> str:
     """Return the compression protocal inferred from given filename.
     Parameters
