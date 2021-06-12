@@ -217,13 +217,13 @@ def drop():
                         flash("Error in type of deleteion! Try again", "error")
                     elif executable['type'] == 'delete':
                         table = table & restriction
-                        with config['transaction'].transaction:
+                        with config['connection'].transaction:
                             _, message = table._delete_cascade(return_message=True)
                         flash(message, "warning")
                         flash("Deleted entries", "warning")
                     elif executable['type'] == 'drop':
                         try:
-                            with config['transaction'].transaction:
+                            with config['connection'].transaction:
                                 table.drop_quick()
                         except dj.DataJointError as e:
                             flash(f"Unable drop table due to possible dependencies: {e}", 'error')
