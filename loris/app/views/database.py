@@ -203,10 +203,12 @@ def drop():
                     write_json(TMP_DROP_EXECUTABLE, {"formatted_dict": formatted_dict, "type": "drop"})
                 elif submit == 'Delete':
                     if restriction is not None:
-                        table = table & restriction
+                        table = table() & restriction
+                    else:
+                        table = table()
                     conn = config['connection']
                     conn.start_transaction()
-                    _, message = table._delete_cascade(return_message=True)
+                    _, message = table()._delete_cascade(return_message=True)
                     conn.cancel_transaction()
                     flash(message, 'warning')
                     flash("The entries of the selected table below will be dropped upon pressing submit!")
@@ -217,7 +219,10 @@ def drop():
                     elif executable.get('type', None) is None:
                         flash("Error in type of deleteion! Try again", "error")
                     elif executable['type'] == 'delete':
-                        table = table & restriction
+                        if restriction is not None:
+                            table = table() & restriction
+                        else:
+                            table = table()
                         with config['connection'].transaction:
                             _, message = table._delete_cascade(return_message=True)
                         flash(message, "warning")
