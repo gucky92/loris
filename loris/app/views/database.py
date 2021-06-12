@@ -202,7 +202,8 @@ def drop():
                     flash("The selected table below will be dropped upon pressing submit!")
                     write_json(TMP_DROP_EXECUTABLE, {"formatted_dict": formatted_dict, "type": "drop"})
                 elif submit == 'Delete':
-                    table = table & restriction
+                    if restriction is not None:
+                        table = table & restriction
                     conn = config['connection']
                     conn.start_transaction()
                     _, message = table._delete_cascade(return_message=True)
