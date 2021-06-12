@@ -259,9 +259,26 @@ def dynamic_jointablesform():
                 'nullable': True
             }
         )
+        upload_file = DynamicFileField(
+            "Upload Data",
+            description="Upload Data as a CSV or a Pickled Pandas File", 
+            validators=[Optional(), Extension(['pkl', 'csv'])]
+        )
 
     return JoinTablesForm
 
+
+def dynamic_droptable():
+    # TODO view
+    class DropTableForm(Form, FormMixin):
+        tables_dict = config['tables']
+        tables = SelectField(
+            'tables',
+            description='tables',
+            choices=[(key, key) for key in tables_dict],
+            validators=[InputRequired()]
+        )
+    return DropTableForm
 
 class ModuleForm(NoCsrfForm, FormMixin):
     # TODO implement validators

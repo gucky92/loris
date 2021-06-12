@@ -81,7 +81,7 @@ def join():
         if submit is None:
             pass
 
-        elif submit in ['Join', 'Download']:
+        elif submit in ['Join', 'Download', 'Upload']:
             if form.validate_on_submit():
                 formatted_dict = form.get_formatted()
 
@@ -111,6 +111,33 @@ def join():
                             'success'
                         )
                         return redirect(url_for('tmpfile', filename=filename))
+                    elif submit == 'Upload':
+                        filepath = formatted_dict['upload_file']
+                        if filepath is None:
+                            flash(
+                                "Assign File to upload", "error"
+                            )
+                        elif not filepath.endswith(('.pkl', '.csv')):
+                            flash(
+                                    "Cannot parse file with ending "
+                                    f"{filepath.split('.')[-1]}.", 
+                                    "error"
+                                )
+                        else:
+                            if filepath.endswith('.pkl'):
+                                data = pd.read_pickle(filepath)
+                            else:
+                                data = pd.read_csv(filepath)
+                            
+                            with config['connection'].transaction:
+                                for table in tables:
+                                    data_ = data[
+                                        list(set(table.heading.names) & set(data.columns))
+                                    ].to_dict('records')
+                                    try:
+                                        table.insert(data_)
+                                    except dj.DataJointError as e:
+                                        flash(f"Unable to insert data due to error in uploaded file:\n{e}", 'error')
                     else:
                         df = joined_table.proj(
                             *joined_table.heading.non_blobs
