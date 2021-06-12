@@ -16,14 +16,14 @@ from loris.app.app import app
 from loris.app.templates import form_template
 from loris.app.forms.dynamic_form import DynamicForm
 from loris.app.forms.fixed import (
-    dynamic_jointablesform, dynamic_settingstableform, LoginForm,
+    dynamic_droptable, dynamic_jointablesform, dynamic_settingstableform, LoginForm,
     PasswordForm, dynamic_tablecreationform
 )
 from loris.app.utils import draw_helper, get_jsontable, user_has_permission
 from loris.utils import save_join
 from loris.app.login import User
 from loris.database.users import grantuser, change_password
-from loris.io import string_load, string_dump
+from loris.io import string_load, string_dump, write_pickle, read_pickle
 
 
 @app.route('/refresh')
@@ -125,19 +125,22 @@ def join():
                                 )
                         else:
                             if filepath.endswith('.pkl'):
-                                data = pd.read_pickle(filepath)
+                                df = pd.read_pickle(filepath)
                             else:
-                                data = pd.read_csv(filepath)
+                                df = pd.read_csv(filepath)
                             
-                            with config['connection'].transaction:
-                                for table in tables:
-                                    data_ = data[
-                                        list(set(table.heading.names) & set(data.columns))
-                                    ].to_dict('records')
-                                    try:
-                                        table.insert(data_)
-                                    except dj.DataJointError as e:
-                                        flash(f"Unable to insert data due to error in uploaded file:\n{e}", 'error')
+                            try:
+                                with config['connection'].transaction:
+                                    for table in tables:
+                                        df_ = df[
+                                            list(set(table.heading.names) & set(df.columns))
+                                        ].to_dict('records')
+                                        table.insert(df_)
+                            except dj.DataJointError as e:
+                                flash(f"Unable to insert data due to error in uploaded file:\n{e}", 'error')
+                            else:
+                                flash(f"Succesfully inserted data into desired tables.", 'success')
+                                    
                     else:
                         df = joined_table.proj(
                             *joined_table.heading.non_blobs
@@ -155,6 +158,89 @@ def join():
         url=url_for('join'),
         data=data,
         toggle_off_keys=[0]
+    )
+
+
+TMP_DROP_EXECUTABLE = os.path.join(config['tmp_folder'], "EXECUTABLE.pkl")
+
+
+@app.route('/drop', methods=['GET', 'POST'])
+@login_required
+def drop():
+    """drop/delete tables/entries
+    """
+    administrator = current_user.user_name in config['administrators']
+
+    if not administrator:
+        flash("Only administrators can drop tables and delete entries in bulk.")
+        return redirect(url_for('/'))
+
+    if os.path.exists(TMP_DROP_EXECUTABLE):
+        executable = read_pickle(TMP_DROP_EXECUTABLE)
+    else:
+        executable = {}
+
+    formclass = dynamic_droptable()
+    form = formclass()
+
+    if request.method == 'POST':
+        submit = request.form.get('submit', None)
+
+        form.rm_hidden_entries()
+
+        if submit is None:
+            pass
+
+        elif submit in ['Drop', 'Delete', 'Submit']:
+            if form.validate_on_submit():
+                formatted_dict = form.get_formatted()
+                table = formclass.tables_dict[formatted_dict['table']]
+                restriction = formatted_dict['restriction']
+
+                if submit == 'Drop':
+                    flash(f"Are you sure you want to delete table `{formatted_dict['table']}`", "warning")
+                    flash("The selected table below will be dropped upon pressing submit!")
+                    write_pickle(TMP_DROP_EXECUTABLE, {"formatted_dict": formatted_dict, "type": "drop"})
+                elif submit == 'Delete':
+                    table = table & restriction
+                    conn = config['connection']
+                    conn.start_transaction()
+                    _, message = table._delete_cascade(return_message=True)
+                    conn.cancel_transaction()
+                    flash(message, 'warning')
+                    flash("The entries of the selected table below will be dropped upon pressing submit!")
+                    write_pickle(TMP_DROP_EXECUTABLE, {"formatted_dict": formatted_dict, "type": "delete"})
+                elif executable:
+                    if executable.get('formatted_dict', {}) != formatted_dict:
+                        flash("Error in submission of request! Try again.", "error")
+                    elif executable.get('type', None) is None:
+                        flash("Error in type of deleteion! Try again", "error")
+                    elif executable['type'] == 'delete':
+                        table = table & restriction
+                        with config['transaction'].transaction:
+                            _, message = table._delete_cascade(return_message=True)
+                        flash(message, "warning")
+                        flash("Deleted entries", "warning")
+                    elif executable['type'] == 'drop':
+                        try:
+                            with config['transaction'].transaction:
+                                table.drop_quick()
+                        except dj.DataJointError as e:
+                            flash(f"Unable drop table due to possible dependencies: {e}", 'error')
+                        else:
+                            flash(f"Dropped table `{formatted_dict['table']}`", "warning")
+                    else:
+                        flash("General bug?", "error")
+                else:
+                    flash("No delete or drop to submit!", "error")
+
+        form.append_hidden_entries()
+
+    return render_template(
+        'pages/drop.html',
+        form=form,
+        url=url_for('drop'),
+        toggle_off_keys=[0], 
     )
 
 

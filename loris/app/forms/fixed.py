@@ -269,14 +269,24 @@ def dynamic_jointablesform():
 
 
 def dynamic_droptable():
-    # TODO view
     class DropTableForm(Form, FormMixin):
         tables_dict = config['tables']
-        tables = SelectField(
-            'tables',
-            description='tables',
+        table = SelectField(
+            'table',
+            description='table',
             choices=[(key, key) for key in tables_dict],
             validators=[InputRequired()]
+        )
+        restriction = RestrictionField(
+            RESTRICTION_LABEL,
+            description=RESTRICTION_DESCRIPTION,
+            validators=[
+                Optional(),
+                OptionalJsonSerializableValidator(is_instance=(dict, list))
+            ],
+            render_kw={
+                'nullable': True
+            }
         )
     return DropTableForm
 
