@@ -206,7 +206,7 @@ def drop():
                         table = table() & restriction
                     else:
                         table = table()
-                    conn = config['connection']
+                    conn = table.connection
                     conn.start_transaction()
                     _, message = table._delete_cascade(return_message=True)
                     conn.cancel_transaction()
@@ -223,7 +223,8 @@ def drop():
                             table = table() & restriction
                         else:
                             table = table()
-                        with config['connection'].transaction:
+                        conn = table.connection
+                        with conn.transaction:
                             _, message = table._delete_cascade(return_message=True)
                         flash(message, "warning")
                         flash("Deleted entries", "warning")
