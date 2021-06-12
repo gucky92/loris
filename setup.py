@@ -21,7 +21,7 @@ with open(os.path.join(path, 'requirements.txt')) as f:
 
 setup(
     name='lorisapp',
-    version='0.1.4dev4',
+    version='0.1.4',
     description='Loris',
     long_description=long_description,
     author='Matthias Christenson',
