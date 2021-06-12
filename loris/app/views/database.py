@@ -161,7 +161,7 @@ def join():
     )
 
 
-TMP_DROP_EXECUTABLE = os.path.join(config['tmp_folder'], "EXECUTABLE.pkl")
+TMP_DROP_EXECUTABLE = os.path.join(config['tmp_folder'], "EXECUTABLE.json")
 
 
 @app.route('/drop', methods=['GET', 'POST'])
