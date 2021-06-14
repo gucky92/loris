@@ -48,11 +48,15 @@ class IntegerCache(dj.Manual):
         from loris import config
         # if already in table do not need to keep in cache
         for entry in self:
-            table = config.get_table(entry['full_table_name'])
-            if len(table & {entry['attr_name']: entry['number']}) > 0:
-                (self & entry).delete_quick()
+            try:
+                table = config.get_table(entry['full_table_name'])
+                if len(table & {entry['attr_name']: entry['number']}) > 0:
+                    (self & entry).delete_quick()
+            except Exception:
+                pass
 
     def get_next_number(self, table, attr_name, number):
+        # TODO get current user and change table accordingly
         entry = {
             'full_table_name': table.full_table_name, 
             'attr_name': attr_name, 
