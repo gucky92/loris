@@ -149,6 +149,7 @@ class Config(dict):
         config['delete_permission'] = config.datajoint_delete_permission
         config.perform_checks()
         config.datajoint_configuration()
+        config['users_dataframe'] = None
 
         return config
 
@@ -156,6 +157,28 @@ class Config(dict):
     def integer_cache(self):
         from loris.schema.core import IntegerCache
         return IntegerCache()
+    
+    @property
+    def users_dataframe(self):
+        if self['users_dataframe'] is None:
+            self['users_dataframe'] = self.user_table.fetch(format='frame').reset_index()
+            self['users_dataframe']['is_authenticated'] = False
+        return self['users_dataframe']
+    
+    def reload_users_dataframe(self):
+        df_old = self.users_dataframe
+        df = self.user_table.fetch(format='frame').reset_index()
+        users = df[self['user_name']].tolist()
+        df['is_authenticated'] = False
+        for index, row in df_old.iterrows():
+            if row[self['user_name']] in users:
+                df.loc[
+                    df[self['user_name']] == row[self['user_name']], 
+                    'is_authenticated'
+                ] = row['is_authenticated']
+            
+        self['users_dataframe'] = df
+        return self
 
     def datajoint_delete_permission(self, table):
         return self.user_has_permission(table, self['database.user'])

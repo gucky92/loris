@@ -5,6 +5,7 @@ from flask_login import UserMixin
 import datajoint as dj
 import warnings
 import pymysql
+import numpy as np
 
 from loris import config
 from loris.errors import LorisError
@@ -14,45 +15,18 @@ class User(UserMixin):
 
     def __init__(self, user_name):
         print(config['connection'])
-        self.table = config.user_table
-
-        # skip mysql error
-        try:
-            if not len(self.table()):
-                config.create_administrator()
-        except pymysql.err.InterfaceError:
-            warnings.warn('not creating administrator')
-
+        
+        self.users = config.users_dataframe
         self.user_name = user_name
+        self.user_bool = self.users[config['user_name']] == self.user_name
+        self._user_exists = np.sum(self.user_bool)
 
-        self.restriction = {config['user_name']: self.user_name}
-
-        print(self.restriction)
-        self.restricted_table = self.table & self.restriction
-        self._user_exists = bool(len(self.restricted_table))
-
-        if len(self.restricted_table) > 1:
+        if self._user_exists > 1:
             raise LorisError('More than a single user entry')
-
-        self._entry = None
-        self._is_authenticated = False
-
+        
     @property
     def entry(self):
-
-        if self._entry is None:
-            if config['user_active'] is None:
-                self._entry = self.restricted_table.proj(
-                    config['user_name'],
-                ).fetch1()
-
-            else:
-                self._entry = self.restricted_table.proj(
-                    config['user_name'],
-                    config['user_active'],
-                ).fetch1()
-
-        return self._entry
+        return self.users[self.user_bool].iloc[0]
 
     @property
     def user_exists(self):
@@ -69,7 +43,10 @@ class User(UserMixin):
 
     @property
     def is_authenticated(self):
-        return self._is_authenticated
+        return self.entry['is_authenticated']
+    
+    def authenticate(self):
+        config.users_dataframe.loc[self.user_bool, 'is_authenticated'] = True
 
     def check_password(self, password):
         # check password in mysql database
@@ -80,9 +57,8 @@ class User(UserMixin):
                 reset=True
             )
             success = True
-            self._is_authenticated = True
+            self.authenticate()
         except Exception:
             success = False
-            self._is_authenticated = False
         config.conn(reset=True)
         return success

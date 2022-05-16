@@ -17,6 +17,7 @@ class LorisApp(Flask):
         self.config['schemata'] = list(config['schemata'].keys())
         self.config['tables'], self.config['autotables'] = \
             config.tables_to_list()
+        config.reload_users_dataframe()
 
 
 app = LorisApp(__name__)

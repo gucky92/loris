@@ -41,11 +41,11 @@ def login():
             flash('Invalid password', 'error')
         elif form.password.data == config['standard_password']:
             flash('Please change your password', 'warning')
-            user._is_authenticated = True
+            user.authenticate()
             login_user(user)
             return redirect(url_for('change'))
         else:
-            user._is_authenticated = True
+            user.authenticate()
             login_user(user, remember=True)
             redirect_url = request.args.get('target', None)
             if redirect_url is None:
