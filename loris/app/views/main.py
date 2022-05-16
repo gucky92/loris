@@ -30,8 +30,7 @@ def login():
     form = LoginForm()
 
     if form.validate_on_submit():
-        user = current_user
-        # user = User(form.user_name.data)
+        user = User(form.user_name.data)
         if user.user_name == 'root':
             flash('Cannot login as root', 'error')
         elif not user.user_exists or not user.check_password(form.password.data):
@@ -42,9 +41,11 @@ def login():
             flash('Invalid password', 'error')
         elif form.password.data == config['standard_password']:
             flash('Please change your password', 'warning')
+            user._is_authenticated = True
             login_user(user)
             return redirect(url_for('change'))
         else:
+            user._is_authenticated = True
             login_user(user, remember=True)
             redirect_url = request.args.get('target', None)
             if redirect_url is None:
