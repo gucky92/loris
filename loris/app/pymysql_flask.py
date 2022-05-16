@@ -48,12 +48,10 @@ class MySQL(object):
         #         reset=True
         #     )
         # else:
-        connection = config.conn(
-            reset=True
-        )
+        connection = config.conn(reset=True)
         # not very efficient to register schema across connection
-        for key, module in config['schemata'].items():
-            connection.register(module.schema)
+        # for key, module in config['schemata'].items():
+        #     connection.register(module.schema)
         print(connection)
 
     def teardown(self, exception):
