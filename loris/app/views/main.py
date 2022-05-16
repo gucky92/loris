@@ -30,7 +30,8 @@ def login():
     form = LoginForm()
 
     if form.validate_on_submit():
-        user = User(form.user_name.data)
+        user = current_user
+        # user = User(form.user_name.data)
         if user.user_name == 'root':
             flash('Cannot login as root', 'error')
         elif not user.user_exists or not user.check_password(form.password.data):
