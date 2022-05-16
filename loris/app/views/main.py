@@ -103,6 +103,17 @@ def change():
 @login_required
 def home():
     # refresh session
+    # app.session_refresh()
+    return render_template(
+        'pages/home.html',
+        user=current_user.user_name
+    )
+    
+    
+@app.route('/home')
+@login_required
+def home():
+    # refresh session
     app.session_refresh()
     return render_template(
         'pages/home.html',

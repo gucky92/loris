@@ -29,6 +29,7 @@ class User(UserMixin):
 
         print(self.restriction)
         self.restricted_table = self.table & self.restriction
+        self._user_exists = bool(len(self.restricted_table))
 
         if len(self.restricted_table) > 1:
             raise LorisError('More than a single user entry')
@@ -54,7 +55,7 @@ class User(UserMixin):
 
     @property
     def user_exists(self):
-        return len(self.restricted_table)
+        return self._user_exists
 
     def get_id(self):
         return str(self.user_name)
