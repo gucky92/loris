@@ -35,7 +35,11 @@ class User(UserMixin):
             raise LorisError('More than a single user entry')
 
         self._entry = None
-        self.is_authenticated = False
+        self._is_authenticated = False
+        
+    @property
+    def is_anonymous(self):
+        return False
 
     @property
     def entry(self):
@@ -67,9 +71,9 @@ class User(UserMixin):
             return True
         return bool(self.entry[config['user_active']])
 
-    # @property
-    # def is_authenticated(self):
-    #     return self.is_active
+    @property
+    def is_authenticated(self):
+        return self._is_authenticated
 
     def check_password(self, password):
         # check password in mysql database
@@ -80,8 +84,9 @@ class User(UserMixin):
                 reset=True
             )
             success = True
-            self.is_authenticated = True
+            self._is_authenticated = True
         except Exception:
             success = False
+            self._is_authenticated = False
         config.conn(reset=True)
         return success
