@@ -35,15 +35,17 @@ def login():
         if user.user_name == 'root':
             flash('Cannot login as root', 'error')
         elif not user.user_exists or not user.check_password(form.password.data):
-            flash('Invalid username or password', 'error')
+            flash('Invalid username', 'error')
         elif not user.is_active:
             flash(f'User {user.user_name} is an inactive member', 'error')
+        elif not user.check_password(form.password.data):
+            flash('Invalid password', 'error')
         elif form.password.data == config['standard_password']:
             flash('Please change your password', 'warning')
             login_user(user)
             return redirect(url_for('change'))
         else:
-            login_user(user)
+            login_user(user, remember=True)
             redirect_url = request.args.get('target', None)
             if redirect_url is None:
                 return redirect(url_for('home'))
