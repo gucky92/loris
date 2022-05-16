@@ -259,9 +259,36 @@ def dynamic_jointablesform():
                 'nullable': True
             }
         )
+        upload_file = DynamicFileField(
+            "Upload Data",
+            description="Upload Data as a CSV or a Pickled Pandas File", 
+            validators=[Optional(), Extension(['pkl', 'csv'])]
+        )
 
     return JoinTablesForm
 
+
+def dynamic_droptable():
+    class DropTableForm(Form, FormMixin):
+        tables_dict = config['tables']
+        table = SelectField(
+            'table',
+            description='table',
+            choices=[(key, key) for key in tables_dict],
+            validators=[InputRequired()]
+        )
+        restriction = RestrictionField(
+            RESTRICTION_LABEL,
+            description=RESTRICTION_DESCRIPTION,
+            validators=[
+                Optional(),
+                OptionalJsonSerializableValidator(is_instance=(dict, list))
+            ],
+            render_kw={
+                'nullable': True
+            }
+        )
+    return DropTableForm
 
 class ModuleForm(NoCsrfForm, FormMixin):
     # TODO implement validators

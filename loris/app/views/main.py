@@ -102,6 +102,15 @@ def change():
 @app.route('/')
 @login_required
 def home():
+    return render_template(
+        'pages/home.html',
+        user=current_user.user_name
+    )
+    
+    
+@app.route('/lehome')
+@login_required
+def lehome():
     # refresh session
     app.session_refresh()
     return render_template(

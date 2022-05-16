@@ -152,6 +152,11 @@ class Config(dict):
 
         return config
 
+    @property
+    def integer_cache(self):
+        from loris.schema.core import IntegerCache
+        return IntegerCache()
+
     def datajoint_delete_permission(self, table):
         return self.user_has_permission(table, self['database.user'])
 
@@ -851,6 +856,7 @@ class Config(dict):
         self.refresh_settings_tables()
         self.refresh_automaker_tables()
         self.refresh_permissions()
+        self.integer_cache.clear()
 
     def get_dynamicform(
         self, table_name, table_class, dynamic_class, **kwargs
@@ -863,15 +869,15 @@ class Config(dict):
         if name not in self['dynamicforms']:
             self['dynamicforms'][name] = {}
 
-        if table_name not in self['dynamicforms'][name]:
-            dynamicform = dynamic_class(table_class)
-            form = dynamicform.formclass(**kwargs)
-            self['dynamicforms'][name][table_name] = dynamicform
-        else:
-            # update foreign keys
-            dynamicform = self['dynamicforms'][name][table_name]
-            form = dynamicform.formclass(**kwargs)
-            dynamicform.update_fields(form)
+        # if table_name not in self['dynamicforms'][name]:
+        dynamicform = dynamic_class(table_class)
+        form = dynamicform.formclass(**kwargs)
+        self['dynamicforms'][name][table_name] = dynamicform
+        # else:
+        #     # update foreign keys
+        #     dynamicform = self['dynamicforms'][name][table_name]
+        #     form = dynamicform.formclass(**kwargs)
+        #     dynamicform.update_fields(form)
 
         return dynamicform, form
 

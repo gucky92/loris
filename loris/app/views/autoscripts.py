@@ -181,6 +181,7 @@ def experiment(table_name, autoscript_folder):
         buttons=reader.buttons,
         enter_show=enter_show,
         stdout=stdout,
+        readonly=[],
         stderr=stderr,
         url_experiment=(None if table_name is None else url_for(
             'table',

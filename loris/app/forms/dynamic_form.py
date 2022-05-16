@@ -413,6 +413,7 @@ class DynamicForm:
                     "An error occured while inserting into table "
                     f"{self.table.full_table_name}: {e}"
                 )
+            config.integer_cache.clear()
         else:  # editing entries savely
             # DO NOT remove primary keys with new update1 method
             insert_dict = {
@@ -430,7 +431,7 @@ class DynamicForm:
                     )
                 )
             }
-            if insert_dict:
+            if insert_dict and bool(set(insert_dict) - set(self.table.primary_key)):
                 try:
                     self.table.update1(insert_dict)
                 except dj.DataJointError as e:
@@ -512,6 +513,11 @@ class DynamicForm:
 
         for field in self.fields.values():
             field.update_field(form)
+        # buggy for insertion
+        # try:
+        #     form.process()
+        # except Exception:
+        #     pass
 
     def draw_relations(self):
         """draw relations

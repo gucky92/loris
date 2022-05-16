@@ -386,10 +386,16 @@ class DynamicField:
             pass
         elif len(self.table()) == 0:
             default = 1
+            default = config.integer_cache.get_next_number(
+                self.table, self.attr.name, default
+            )
         elif self.in_key and len(self.table.heading.primary_key) == 1:
             default = np.max(
                 self.table.proj().fetch()[self.name]
             ) + 1
+            default = config.integer_cache.get_next_number(
+                self.table, self.attr.name, default
+            )
         return default
 
     def _get_prefixid_default(self):

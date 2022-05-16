@@ -29,11 +29,13 @@ class User(UserMixin):
 
         print(self.restriction)
         self.restricted_table = self.table & self.restriction
+        self._user_exists = bool(len(self.restricted_table))
 
         if len(self.restricted_table) > 1:
             raise LorisError('More than a single user entry')
 
         self._entry = None
+        self.is_authenticated = False
 
     @property
     def entry(self):
@@ -54,7 +56,7 @@ class User(UserMixin):
 
     @property
     def user_exists(self):
-        return len(self.restricted_table)
+        return self._user_exists
 
     def get_id(self):
         return str(self.user_name)
@@ -65,9 +67,9 @@ class User(UserMixin):
             return True
         return bool(self.entry[config['user_active']])
 
-    @property
-    def is_authenticated(self):
-        return self.is_active
+    # @property
+    # def is_authenticated(self):
+    #     return self.is_active
 
     def check_password(self, password):
         # check password in mysql database
@@ -78,6 +80,7 @@ class User(UserMixin):
                 reset=True
             )
             success = True
+            self.is_authenticated = True
         except Exception:
             success = False
         config.conn(reset=True)
