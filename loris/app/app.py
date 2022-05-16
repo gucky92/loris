@@ -26,6 +26,7 @@ app.config['external_wiki'] = config['external_wiki']
 
 mysql = MySQL(app)
 login_manager = LoginManager(app)
+login_manager.init_app(app)
 
 
 @login_manager.user_loader

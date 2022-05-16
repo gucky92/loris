@@ -36,10 +36,6 @@ class User(UserMixin):
 
         self._entry = None
         self._is_authenticated = False
-        
-    @property
-    def is_anonymous(self):
-        return False
 
     @property
     def entry(self):
