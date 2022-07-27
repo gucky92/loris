@@ -1,6 +1,8 @@
 """Basic utility functions
 """
 
+import warnings
+
 
 def is_manuallookup(table, ):
     """check if table is a manuallookup table
@@ -8,17 +10,21 @@ def is_manuallookup(table, ):
 
     truth = False
 
-    if (
-        (len(table.heading.primary_key) == 1)
-        and (len(table.heading.secondary_attributes) == 1)
-    ):
-        pk = table.heading.primary_key[0]
-        sk = table.heading.secondary_attributes[0]
+    try:
+        if (
+            (len(table.heading.primary_key) == 1)
+            and (len(table.heading.secondary_attributes) == 1)
+        ):
+            pk = table.heading.primary_key[0]
+            sk = table.heading.secondary_attributes[0]
 
-        truth = (
-            (sk == 'comments')
-            & (pk == table.table_name)
-        )
+            truth = (
+                (sk == 'comments')
+                & (pk == table.table_name)
+            )
+    except AttributeError as e:
+        print(f"AttributeErrorWarning for table: {table}")
+        warnings.warn(e)
 
     return truth
 
