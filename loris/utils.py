@@ -24,7 +24,7 @@ def is_manuallookup(table, ):
             )
     except AttributeError as e:
         print(f"AttributeErrorWarning for table: {table}")
-        warnings.warn(e)
+        # warnings.warn(str(e))
 
     return truth
 
