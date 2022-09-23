@@ -1,4 +1,6 @@
 # Loris
+[![DOI](https://zenodo.org/badge/233992505.svg)](https://zenodo.org/badge/latestdoi/233992505)
+
 ### Database and Analysis application for a Drosophila Lab (or any lab)
 
 Loris is in development with core features still being tested and added.
